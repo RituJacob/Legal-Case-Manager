@@ -61,10 +61,12 @@ jobs:
 
     # Run backend tests
     #- name: Run Backend Tests
-     # JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      #  PORT: ${{ secrets.PORT }}
-      #working-directory: ./backend
-     # run: npm test
+     # env:
+      #  MONGO_URI: ${{ secrets.MONGO_URI }}
+       # JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        # PORT: ${{ secrets.PORT }}
+      # working-directory: ./backend
+      # run: npm test
 
 
     - run: npm ci
