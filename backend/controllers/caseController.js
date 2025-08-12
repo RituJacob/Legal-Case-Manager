@@ -1,115 +1,46 @@
-const Case = require('../models/caseModel');
-const path = require('path');
-const fs = require('fs');
+const Case = require('../models/Case');
 
-// @desc    Create new case (case filing)
-// @route   POST /api/cases
-// @access  Private
-const createCase = async (req, res) => {
-  try {
-    const { title, description, clientId, lawyerId, hearingDate } = req.body;
-
-    let evidenceFiles = [];
-    if (req.files && req.files.length > 0) {
-      evidenceFiles = req.files.map(file => `/uploads/evidence/${file.filename}`);
-    }
-
-    const newCase = await Case.create({
-      title,
-      description,
-      client: clientId,
-      lawyer: lawyerId || null,
-      evidence: evidenceFiles,
-      hearingDate: hearingDate || null,
-      status: 'Filed'
-    });
-
-    res.status(201).json(newCase);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Case filing failed' });
-  }
-};
-
-// @desc    Get all cases
-// @route   GET /api/cases
-// @access  Private
+// @desc Get logged-in user's cases
+// @route GET /api/cases
+// @access Private
 const getCases = async (req, res) => {
   try {
-    let cases;
-    if (req.user.role === 'Admin') {
-      cases = await Case.find().populate('client lawyer', 'name email');
-    } else if (req.user.role === 'Lawyer') {
-      cases = await Case.find({ lawyer: req.user._id }).populate('client lawyer', 'name email');
-    } else {
-      cases = await Case.find({ client: req.user._id }).populate('client lawyer', 'name email');
-    }
+    const cases = await Case.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(cases);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Fetching cases failed' });
+    res.status(500).json({ message: 'Server error fetching cases' });
   }
 };
 
-// @desc    Get single case by ID
-// @route   GET /api/cases/:id
-// @access  Private
-const getCaseById = async (req, res) => {
+// @desc File a new case
+// @route POST /api/cases
+// @access Private
+
+const { v4: uuidv4 } = require('uuid'); // npm install uuid
+
+const createCase = async (req, res) => {
+  const { title, description } = req.body; // no category
+
+  if (!title || !description) {
+    return res.status(400).json({ message: 'Title and description are required' });
+  }
+
   try {
-    const caseData = await Case.findById(req.params.id).populate('client lawyer', 'name email');
-    if (!caseData) {
-      return res.status(404).json({ message: 'Case not found' });
-    }
-    res.json(caseData);
+    const newCase = new Case({
+      caseNumber: uuidv4(),         // generate unique caseNumber
+      title,
+      description,
+      client: req.user._id,         // logged-in user is client
+      status: 'Filed'               // default status
+    });
+
+    const savedCase = await newCase.save();
+    res.status(201).json(savedCase);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Fetching case failed' });
+    console.error('Error creating case:', error);
+    res.status(500).json({ message: 'Failed to create case' });
   }
 };
 
-// @desc    Update case (status, hearing schedule, lawyer assignment)
-// @route   PUT /api/cases/:id
-// @access  Private
-const updateCase = async (req, res) => {
-  try {
-    const caseData = await Case.findById(req.params.id);
-    if (!caseData) {
-      return res.status(404).json({ message: 'Case not found' });
-    }
 
-    const updates = req.body;
-    Object.assign(caseData, updates);
-
-    await caseData.save();
-    res.json(caseData);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Updating case failed' });
-  }
-};
-
-// @desc    Delete case
-// @route   DELETE /api/cases/:id
-// @access  Private
-const deleteCase = async (req, res) => {
-  try {
-    const caseData = await Case.findById(req.params.id);
-    if (!caseData) {
-      return res.status(404).json({ message: 'Case not found' });
-    }
-
-    await caseData.remove();
-    res.json({ message: 'Case deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Deleting case failed' });
-  }
-};
-
-module.exports = {
-  createCase,
-  getCases,
-  getCaseById,
-  updateCase,
-  deleteCase
-};
+module.exports = { getCases, createCase };
