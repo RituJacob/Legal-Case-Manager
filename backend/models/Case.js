@@ -1,7 +1,9 @@
 // Case schema 
 
 const mongoose = require('mongoose');
-
+if (mongoose.models.Case) {
+  delete mongoose.models.Case;
+}
 const evidenceSchema = new mongoose.Schema({
   fileName: String,
   fileUrl: String,
@@ -26,7 +28,7 @@ const caseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  lawyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // assigned lawyer
+  lawyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // assigned lawyer
   status: { type: String, enum: ['Filed','In Progress','Hearing Scheduled','Closed'], default: 'Filed' },
   evidence: [evidenceSchema],
   hearings: [hearingSchema],
@@ -40,4 +42,7 @@ caseSchema.pre('save', function(next){
   next();
 });
 
-module.exports = mongoose.model('Case', caseSchema);
+//module.exports = mongoose.model('Case', caseSchema);
+//module.exports = Case;
+module.exports = mongoose.models.Case || mongoose.model('Case', caseSchema);
+
