@@ -14,6 +14,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 const caseRoutes = require('./routes/cases');
 //app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/cases', require('./routes/caseRoutes'));
 
 // Export the app object for testing
 if (require.main === module) {

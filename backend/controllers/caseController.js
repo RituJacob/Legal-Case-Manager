@@ -1,160 +1,117 @@
-const Case = require('../models/Case');
-const User = require('../models/User');
+const Case = require('../models/caseModel');
+const path = require('path');
+const fs = require('fs');
 
-// Create case (file case)
+// @desc    Create new case (case filing)
+// @route   POST /api/cases
+// @access  Private
 const createCase = async (req, res) => {
   try {
-    const { caseNumber, title, description, clientId, lawyerId } = req.body;
-    if (!caseNumber || !title || !description || !clientId) return res.status(400).json({ message: 'Missing fields' });
+    const { title, description, clientId, lawyerId, hearingDate } = req.body;
 
-    // create case
-    const theCase = await Case.create({
-      caseNumber, title, description, client: clientId, lawyer: lawyerId || undefined,
-      accessList: [
-        { user: clientId, permission: 'View' },
-        ...(lawyerId ? [{ user: lawyerId, permission: 'Edit' }] : [])
-      ]
+    let evidenceFiles = [];
+    if (req.files && req.files.length > 0) {
+      evidenceFiles = req.files.map(file => `/uploads/evidence/${file.filename}`);
+    }
+
+    const newCase = await Case.create({
+      title,
+      description,
+      client: clientId,
+      lawyer: lawyerId || null,
+      evidence: evidenceFiles,
+      hearingDate: hearingDate || null,
+      status: 'Filed'
     });
 
-    // update user references
-    if (lawyerId) await User.findByIdAndUpdate(lawyerId, { $push: { assignedCases: theCase._id } });
-    await User.findByIdAndUpdate(clientId, { $push: { clientCases: theCase._id } });
-
-    res.status(201).json(theCase);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(201).json(newCase);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Case filing failed' });
   }
 };
 
-// Get list of cases — RBAC aware
+// @desc    Get all cases
+// @route   GET /api/cases
+// @access  Private
 const getCases = async (req, res) => {
   try {
-    const user = req.user;
-    let query = {};
-
-    if (user.role === 'Admin') {
-      query = {};
-    } else if (user.role === 'Lawyer') {
-      query = { $or: [ { lawyer: user._id }, { 'accessList.user': user._id } ] };
-    } else { // Client
-      query = { client: user._id };
+    let cases;
+    if (req.user.role === 'Admin') {
+      cases = await Case.find().populate('client lawyer', 'name email');
+    } else if (req.user.role === 'Lawyer') {
+      cases = await Case.find({ lawyer: req.user._id }).populate('client lawyer', 'name email');
+    } else {
+      cases = await Case.find({ client: req.user._id }).populate('client lawyer', 'name email');
     }
-
-    const cases = await Case.find(query).populate('client', 'name email').populate('lawyer', 'name email');
     res.json(cases);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Fetching cases failed' });
   }
 };
 
-// Get single case by id (and check access)
+// @desc    Get single case by ID
+// @route   GET /api/cases/:id
+// @access  Private
 const getCaseById = async (req, res) => {
   try {
-    const theCase = await Case.findById(req.params.id).populate('client lawyer accessList.user', 'name email role');
-    if (!theCase) return res.status(404).json({ message: 'Case not found' });
-
-    // allow if admin, owner client, assigned lawyer, or in accessList
-    const allowed = req.user.role === 'Admin' ||
-      theCase.client.equals(req.user._id) ||
-      (theCase.lawyer && theCase.lawyer.equals(req.user._id)) ||
-      theCase.accessList.some(a => a.user.equals(req.user._id));
-
-    if (!allowed) return res.status(403).json({ message: 'Forbidden' });
-
-    res.json(theCase);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const caseData = await Case.findById(req.params.id).populate('client lawyer', 'name email');
+    if (!caseData) {
+      return res.status(404).json({ message: 'Case not found' });
+    }
+    res.json(caseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Fetching case failed' });
   }
 };
 
-// Update case (only allowed by Admin or assigned Lawyer (Edit) )
+// @desc    Update case (status, hearing schedule, lawyer assignment)
+// @route   PUT /api/cases/:id
+// @access  Private
 const updateCase = async (req, res) => {
   try {
-    const theCase = await Case.findById(req.params.id);
-    if (!theCase) return res.status(404).json({ message: 'Case not found' });
-
-    // Check permission: admin or lawyer with Edit
-    const canEdit = req.user.role === 'Admin' ||
-      (req.user.role === 'Lawyer' && (theCase.lawyer && theCase.lawyer.equals(req.user._id)));
-
-    if (!canEdit) return res.status(403).json({ message: 'Forbidden' });
-
-    const { title, description, status, lawyerId } = req.body;
-    if (title) theCase.title = title;
-    if (description) theCase.description = description;
-    if (status) theCase.status = status;
-    if (lawyerId) {
-      theCase.lawyer = lawyerId;
-      // ensure access list contains lawyer with Edit
-      if (!theCase.accessList.some(a => a.user.equals(lawyerId))) theCase.accessList.push({ user: lawyerId, permission: 'Edit' });
+    const caseData = await Case.findById(req.params.id);
+    if (!caseData) {
+      return res.status(404).json({ message: 'Case not found' });
     }
 
-    await theCase.save();
-    res.json(theCase);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const updates = req.body;
+    Object.assign(caseData, updates);
+
+    await caseData.save();
+    res.json(caseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Updating case failed' });
   }
 };
 
-// Delete case (admin only)
+// @desc    Delete case
+// @route   DELETE /api/cases/:id
+// @access  Private
 const deleteCase = async (req, res) => {
   try {
-    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Only admin can delete cases' });
-    const theCase = await Case.findByIdAndDelete(req.params.id);
-    if (!theCase) return res.status(404).json({ message: 'Case not found' });
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+    const caseData = await Case.findById(req.params.id);
+    if (!caseData) {
+      return res.status(404).json({ message: 'Case not found' });
+    }
 
-// Upload evidence (multer handles file)
-const addEvidence = async (req, res) => {
-  try {
-    const theCase = await Case.findById(req.params.id);
-    if (!theCase) return res.status(404).json({ message: 'Case not found' });
-
-    // Check permission: client (owner), assigned lawyer, or admin
-    const allowed = req.user.role === 'Admin' || theCase.client.equals(req.user._id) || (theCase.lawyer && theCase.lawyer.equals(req.user._id));
-    if (!allowed) return res.status(403).json({ message: 'Forbidden' });
-
-    if (!req.file) return res.status(400).json({ message: 'No file' });
-
-    theCase.evidence.push({
-      fileName: req.file.originalname,
-      fileUrl: `/uploads/${req.file.filename}`,
-      uploadedBy: req.user._id
-    });
-
-    await theCase.save();
-    res.json(theCase);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// Add hearing (schedule)
-const addHearing = async (req, res) => {
-  try {
-    const theCase = await Case.findById(req.params.id);
-    if (!theCase) return res.status(404).json({ message: 'Case not found' });
-
-    // allow only Admin or Lawyer
-    if (!['Admin','Lawyer'].includes(req.user.role)) return res.status(403).json({ message: 'Forbidden' });
-
-    const { date, notes } = req.body;
-    if (!date) return res.status(400).json({ message: 'Date required' });
-
-    theCase.hearings.push({ date, notes, createdBy: req.user._id });
-    theCase.status = 'Hearing Scheduled';
-
-    await theCase.save();
-    res.json(theCase);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    await caseData.remove();
+    res.json({ message: 'Case deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Deleting case failed' });
   }
 };
 
 module.exports = {
-  createCase, getCases, getCaseById, updateCase, deleteCase, addEvidence, addHearing
+  createCase,
+  getCases,
+  getCaseById,
+  updateCase,
+  deleteCase
 };
+
+
