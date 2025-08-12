@@ -1,3 +1,5 @@
+// Case schema 
+
 const mongoose = require('mongoose');
 
 const evidenceSchema = new mongoose.Schema({
