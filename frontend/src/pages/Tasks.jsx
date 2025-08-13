@@ -176,11 +176,14 @@ const FileCase = () => {
                     Accept
                   </button>
                   <button
-                    onClick={() => updateCaseStatus(c._id, 'Closed')}
-                    className="bg-red-600 text-white px-4 py-2 rounded"
-                  >
-                    Deny
-                  </button>
+  onClick={() =>
+    setCases(prevCases => prevCases.filter(item => item._id !== c._id))
+  }
+  className="bg-red-600 text-white px-4 py-2 rounded"
+>
+  Deny
+</button>
+
                 </div>
               )}
             </li>
