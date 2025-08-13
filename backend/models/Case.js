@@ -27,6 +27,7 @@ const caseSchema = new mongoose.Schema({
   caseNumber: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
+  category: { type: String, enum: ['Civil', 'Criminal', 'Family', 'Corporate'], required: true },
   client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   lawyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // assigned lawyer
   status: { type: String, enum: ['Filed','In Progress','Hearing Scheduled','Closed'], default: 'Filed' },
