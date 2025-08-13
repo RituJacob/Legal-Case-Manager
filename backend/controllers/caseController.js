@@ -87,7 +87,6 @@ const createCase = async (req, res) => {
   }
 };
 
-// caseController.js
 const updateCaseStatus = async (req, res) => {
   try {
     const c = await Case.findById(req.params.id);
