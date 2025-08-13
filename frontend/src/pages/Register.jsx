@@ -69,20 +69,25 @@ const Register = () => {
         >
           <option value="Client">Client</option>
           <option value="Lawyer">Lawyer</option>
-          <option value="Admin">Admin</option>
         </select>
 
         {/* Show specialization only if role is Lawyer */}
-        {formData.role === 'Lawyer' && (
-          <input
-            type="text"
-            placeholder="Specialization"
-            value={formData.specialization}
-            onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-            className="w-full mb-4 p-2 border rounded"
-            required={formData.role === 'Lawyer'}
-          />
-        )}
+  
+          {formData.role === 'Lawyer' && (
+  <select
+    className="w-full border p-2 mb-3 rounded"
+    value={formData.specialization}
+    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+    required
+  >
+    <option value="">Select Specialization</option>
+    <option value="Civil">Civil</option>
+    <option value="Criminal">Criminal</option>
+    <option value="Family">Family</option>
+    <option value="Corporate">Corporate</option>
+  </select>
+)}
+      
 
         <input
           type="text"

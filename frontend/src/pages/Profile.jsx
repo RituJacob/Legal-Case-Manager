@@ -92,16 +92,22 @@ const Profile = () => {
         />
 
         {/* Show specialization only if Lawyer */}
+       
         {formData.role === 'Lawyer' && (
-          <input
-            type="text"
-            placeholder="Specialization"
-            value={formData.specialization}
-            onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-            className="w-full mb-4 p-2 border rounded"
-            required
-          />
-        )}
+  <select
+    className="w-full border p-2 mb-3 rounded"
+    value={formData.specialization}
+    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+    required
+  >
+    <option value="">Select Specialization</option>
+    <option value="Civil">Civil</option>
+    <option value="Criminal">Criminal</option>
+    <option value="Family">Family</option>
+    <option value="Corporate">Corporate</option>
+    {/* Add more options if needed */}
+  </select>
+)}
 
         <input
           type="text"
