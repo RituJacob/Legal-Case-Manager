@@ -58,13 +58,13 @@ jobs:
           echo "$PROD" > .env
 
       # Start backend using PM2
-      - name: Start Backend with PM2
-        working-directory: ./backend
-        run: |
-          pm2 stop all || true
-          pm2 delete all || true
-          pm2 start npm --name "backend" -- run start
-          pm2 save
+      #- name: Start Backend with PM2
+       # working-directory: ./backend
+       # run: |
+       #   pm2 stop all || true
+       #   pm2 delete all || true
+       #   pm2 start npm --name "backend" -- run start
+       #  pm2 save
 
       # Optional: Restart all apps after deploy
       - name: Restart PM2 Apps
