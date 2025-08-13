@@ -37,14 +37,17 @@ jobs:
         working-directory: ./backend
         run: |
           npm install --global yarn
-          yarn install --frozen-lockfile
+          yarn --version
+          yarn install
+
 
       # Install frontend dependencies and build
-      - name: Install Frontend Dependencies & Build
+      - name: Install Frontend Dependencies
         working-directory: ./frontend
         run: |
-          yarn install --frozen-lockfile
-          yarn build
+          yarn install
+          yarn run build
+
 
       # Run backend tests
       - name: Run Backend Tests
