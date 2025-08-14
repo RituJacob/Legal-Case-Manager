@@ -3,72 +3,67 @@ name: Backend CI
 on:
   push:
     branches:
-      - main  # Trigger CI on pushes to the main branch
+      - main
 
 jobs:
   test-and-deploy:
-    name: Test and Deploy
-    runs-on: ubuntu-latest  # Use self-hosted if required: self-hosted
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [22]  # Test on Node.js 22
+        node-version: [22]
 
     env:
       MONGO_URI: ${{ secrets.MONGO_URI }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       PORT: ${{ secrets.PORT }}
       PROD: ${{ secrets.PROD }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_PATH: ${{ secrets.SERVER_PATH }}
 
     steps:
-      # Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: yarn
 
-      # Install backend dependencies
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: |
           npm install --global yarn
-          yarn --version
           yarn install
 
-
-      # Install frontend dependencies and build
       - name: Install Frontend Dependencies
         working-directory: ./frontend
         run: |
           yarn install
-          yarn run build
+          yarn build
 
-
-      # Run backend tests
       - name: Run Backend Tests
         working-directory: ./backend
         run: yarn test
 
-      # Setup backend environment file
       - name: Setup Backend .env
         working-directory: ./backend
         run: |
           echo "$PROD" > .env
 
-      # Start backend using PM2
-      #- name: Start Backend with PM2
-       # working-directory: ./backend
-       # run: |
-       #   pm2 stop all || true
-       #   pm2 delete all || true
-       #   pm2 start npm --name "backend" -- run start
-       #  pm2 save
-
-      # Optional: Restart all apps after deploy
-      - name: Restart PM2 Apps
-        run: pm2 restart all
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.SERVER_PATH }}
+            git pull origin main
+            cd backend
+            yarn install --production
+            echo "${PROD}" > .env
+            pm2 restart all || pm2 start npm --name "backend" -- run start
+            pm2 save
