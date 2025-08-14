@@ -3,67 +3,78 @@ name: Backend CI
 on:
   push:
     branches:
-      - main
+      - main  # Trigger CI on pushes to the main branch
+
 
 jobs:
-  test-and-deploy:
-    runs-on: ubuntu-latest
+  test:
+    name: Run Tests
+    runs-on: self-hosted
 
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [22] # Test on multiple Node.js versions
 
-    env:
-      MONGO_URI: ${{ secrets.MONGO_URI }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      PORT: ${{ secrets.PORT }}
-      PROD: ${{ secrets.PROD }}
-      SERVER_USER: ${{ secrets.SERVER_USER }}
-      SERVER_HOST: ${{ secrets.SERVER_HOST }}
-      SERVER_PATH: ${{ secrets.SERVER_PATH }}
+
+    environment: MONGO_URI
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      #- name: Setup Node.js
-      #  uses: actions/setup-node@v3
-      #  with:
-      #    node-version: ${{ matrix.node-version }}
-      #    cache: yarn
+    # Set up Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
 
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: |
-          npm install --global yarn
-          yarn install
+    - name: Print Env Secret
 
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: |
-          yarn install
-          yarn build
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        PORT: ${{ secrets.PORT }}
+      run: | 
+        echo "Secret 1 is: $MONGO_URI"
+        echo "Secret 2 is: $JWT_SECRET"
+        echo "Secret 3 is: $PORT"
+      
+    - run: pm2 stop all
 
-      - name: Run Backend Tests
-        working-directory: ./backend
-        run: yarn test
+    # Install dependencies for backend
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: | 
+       npm install --global yarn
+       yarn --version
+       yarn install
+      
+    # Install dependencies for frontend
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: |
+        df -h
+        sudo rm -rf ./build
+        yarn install
+        yarn run build
 
-      - name: Setup Backend .env
-        working-directory: ./backend
-        run: |
-          echo "$PROD" > .env
 
-      # Deploy to server via SSH
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            cd /path/to/project
-            git pull
-            cd backend && yarn install
-            cd ../frontend && yarn install && yarn build
-            pm2 restart all
+    # Run backend tests
+    - name: Run Backend Tests
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        PORT: ${{ secrets.PORT }}
+      working-directory: ./backend
+      run: npm test
+
+
+    - run: npm ci
+    - run: | 
+        cd ./backend
+        touch .env
+        echo "${{ secrets.PROD }}" > .env
+
+    - run: pm2 start all
+
+    - run: pm2 restart all
