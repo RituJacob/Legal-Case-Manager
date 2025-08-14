@@ -26,11 +26,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: yarn
+      #- name: Setup Node.js
+      #  uses: actions/setup-node@v3
+      #  with:
+      #    node-version: ${{ matrix.node-version }}
+      #    cache: yarn
 
       - name: Install Backend Dependencies
         working-directory: ./backend
