@@ -53,17 +53,17 @@ jobs:
         run: |
           echo "$PROD" > .env
 
-      - name: Deploy to Server via SSH
+      # Deploy to server via SSH
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
           script: |
-            cd ${{ env.SERVER_PATH }}
-            git pull origin main
-            cd backend
-            yarn install --production
-            echo "${PROD}" > .env
-            pm2 restart all || pm2 start npm --name "backend" -- run start
-            pm2 save
+            cd /path/to/project
+            git pull
+            cd backend && yarn install
+            cd ../frontend && yarn install && yarn build
+            pm2 restart all
