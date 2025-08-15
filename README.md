@@ -1,14 +1,23 @@
-A full-stack application for managing legal cases with features for case filing.
+A full-stack application for managing legal cases with features for case filing.  
+
 Supports role-based access for Clients and Lawyers, with secure authentication and CRUD operations.
 
-Features
-User Authentication & Authorization (JWT-based)
-Role Management (Client, Lawyer)
-Case Filing with unique case numbers
-Case Status Management (Filed → In Progress → Closed)
-Frontend built with React 
-Backend with Node.js, Express, MongoDB
-PM2 + Nginx for production deployment
+Features  
+
+User Authentication & Authorization (JWT-based)  
+
+Role Management (Client, Lawyer)  
+
+Case Filing with unique case numbers  
+
+Case Status Management (Filed → In Progress → Closed)  
+
+Frontend built with React   
+
+Backend with Node.js, Express, MongoDB  
+
+PM2 + Nginx for production deployment  
+
 
 Tech Stack
 Frontend: React, TailwindCSS, Axios
