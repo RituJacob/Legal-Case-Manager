@@ -137,4 +137,7 @@ change base url in axiosConfig.js to public url of instance
 8. Access your application -> http://<your public ip addr>  
 
 
+**Jira Dashbaord Link**: https://connect-team-la9u7rtq.atlassian.net/jira/software/projects/LCM/boards/34?atlOrigin=eyJpIjoiODAyMGY2NzVmZjg4NDA4MDgxNmZhNmE5ODdkYmY3MjYiLCJwIjoiaiJ9
+**Public URL**: 52.63.144.39
+
 
