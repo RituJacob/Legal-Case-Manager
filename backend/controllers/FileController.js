@@ -1,6 +1,9 @@
 const fileRepository = require('../repositories/fileRepository');
+const { getStorageService } = require('../services/storage/storageFactory');
 const fs = require('fs');
 const path = require('path');
+
+const storageService = getStorageService();
 
 //   code to upload file
 // route   POST /api/files/upload
@@ -80,14 +83,7 @@ exports.deleteFile = async (req, res) => {
             return res.status(404).json({ message: 'File not found' });
         }
 
-        // Use a try/catch block for the file system operation for safety
-        try {
-            // Use the SYNCHRONOUS version to ensure it completes before moving on
-            fs.unlinkSync(file.path);
-        } catch (fsError) {
-            // Log the error but continue, DB record will still be removed
-            console.error(`Failed to delete file from disk, but continuing to delete DB record. Path: ${file.path}`, fsError);
-        }
+        storageService.delete(file.path);
         
         // Delete the record from the database
         await fileRepository.deleteById(req.params.id);
