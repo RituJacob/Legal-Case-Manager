@@ -42,10 +42,7 @@ exports.getFiles = async (req, res) => {
 exports.renameFile = async (req, res) => {
     try {
         const { newName } = req.body;
-        if (!newName || newName.trim() === '') {
-            return res.status(400).json({ message: 'New name is required' });
-        }
-
+        
         const file = await fileRepository.findById(req.params.id);
 
         //  ensure the file exists and the user owns it for safety

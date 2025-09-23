@@ -23,13 +23,10 @@ const getCases = async (req, res) => {
 // @route POST /api/cases
 // @access Private
 const createCase = async (req, res) => {
-  const { title, description, category } = req.body;
-
-  if (!title || !description || !category) {
-    return res.status(400).json({ message: 'Title, description and category are required' });
-  }
+  
 
   try {
+    const { title, description, category } = req.body;
     const caseData = {
       caseNumber: uuidv4(),
       title,
