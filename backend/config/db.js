@@ -1,17 +1,34 @@
-// config/db.js
 const mongoose = require("mongoose");
 
-// Set strictQuery explicitly to suppress the warning
-mongoose.set('strictQuery', true);
+class Database {
+    constructor() {
+        
+        if (!Database.instance) {
+            this._connect();
+            Database.instance = this;
+        }
+        
+        return Database.instance;
+    }
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);  // Remove deprecated options
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection error:", error.message);
-    process.exit(1);
-  }
-};
+    
+    async _connect() {
+        try {
+            if (!process.env.MONGO_URI) {
+                console.error("MongoDB connection error: MONGO_URI is not defined.");
+                process.exit(1);
+            }
+            await mongoose.connect(process.env.MONGO_URI);
+            console.log("MongoDB connected successfully");
+        } catch (error) {
+            console.error("MongoDB connection error:", error.message);
+            process.exit(1);
+        }
+    }
+}
 
-module.exports = connectDB;
+
+const instance = new Database();
+
+
+module.exports = instance;

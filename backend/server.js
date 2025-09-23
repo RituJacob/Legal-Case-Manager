@@ -1,36 +1,31 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const connectDB = require('./config/db');
+const path = require('path');
 
 dotenv.config();
 
+require('./config/db');
+
+
 const app = express();
-const path = require('path');
+const fileRoutes = require('./routes/fileRoutes');
+const caseRoutes = require('./routes/caseRoutes');
 
 
 app.use(cors());
 app.use(express.json());
-
-// Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-// app.use('/api/tasks', require('./routes/taskRoutes'));
-app.use('/api/cases', require('./routes/caseRoutes'));
-app.use('/api/files', require('./routes/fileRoutes'));
+app.use('/api/files', fileRoutes);
+app.use('/api/cases', caseRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
-
-// Start server only if run directly
+// Export the app object for testing
 if (require.main === module) {
-  connectDB();
-  const PORT = process.env.PORT || 5001;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
-module.exports = app;
+    
+    const PORT = process.env.PORT || 5001;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  }
 
 
-
-
-
+module.exports = app
