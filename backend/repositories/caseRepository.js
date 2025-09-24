@@ -18,6 +18,7 @@ class CaseRepository {
                 { lawyer: user._id },
                 { lawyer: null, category: user.specialization }
             ];
+            
         }
 
         // The controller doesn't need code about populating or sorting.
@@ -26,6 +27,12 @@ class CaseRepository {
             .populate('lawyer', 'name email specialization')
             .sort({ createdAt: -1 });
     }
+findAll() {
+    return Case.find()
+      .populate('client', 'name email')
+      .populate('lawyer', 'name email specialization')
+      .sort({ createdAt: -1 });
+  }
 
     /**
      * Finds each single case by its ID.

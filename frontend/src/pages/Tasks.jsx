@@ -4,9 +4,6 @@ import { useAuth } from '../context/AuthContext';
 
 const FileCase = () => {
   const { user } = useAuth();
-  
-
-
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -16,27 +13,29 @@ const FileCase = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  if (!user) return; // wait until user is loaded from context
+    if (!user) return; // wait until user is loaded from context
 
-  const fetchCases = async () => {
-    try {
-      let url = '/api/cases';
-      if (user.role === 'Client') {
-        url += `?clientId=${user._id}`;
-      } else if (user.role === 'Lawyer') {
-        url += `?lawyerId=${user._id}`;
+    const fetchCases = async () => {
+      try {
+        let url = '/api/cases';
+        if (user.role === 'Client') {
+          url += `?clientId=${user._id}`;
+        } else if (user.role === 'Lawyer') {
+          url += `?lawyerId=${user._id}`;
+        }
+
+        const res = await axiosInstance.get(url, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        setCases(res.data);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to fetch your cases');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const res = await axiosInstance.get(url, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setCases(res.data);
-    } catch {
-      alert('Failed to fetch your cases');
-    } finally {
-      setLoading(false);
-    }
-  };
     fetchCases();
   }, [user]);
 
@@ -49,55 +48,46 @@ const FileCase = () => {
       setCases([...cases, res.data]);
       setFormData({ title: '', description: '', category: '' });
       alert('Case filed successfully');
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert('Failed to file case');
     }
   };
-  
+
   const handleDelete = async (caseId) => {
-  try {
-    await axiosInstance.delete(`/api/cases/${caseId}`, {
-      headers: { Authorization: `Bearer ${user.token}` }
-    });
-
-    setCases(prevCases => prevCases.filter(c => c._id !== caseId));
-    alert('Case deleted successfully');
-  } catch (err) {
-    console.error(err);
-    alert('Failed to delete case');
-  }
-};
-
+    try {
+      await axiosInstance.delete(`/api/cases/${caseId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setCases(prevCases => prevCases.filter(c => c._id !== caseId));
+      alert('Case deleted successfully');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete case');
+    }
+  };
 
   const updateCaseStatus = async (caseId, status) => {
-  try {
+    try {
+      const res = await axiosInstance.patch(
+        `/api/cases/${caseId}`,
+        { status },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
 
-    const res = await axiosInstance.patch(
-  `/api/cases/${caseId}`, // remove /status
-  { status },
-  { headers: { Authorization: `Bearer ${user.token}` } }
-);
+      setCases(prevCases =>
+        prevCases.map(c => (c._id === caseId ? { ...c, status: res.data.status } : c))
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update case status');
+    }
+  };
 
+  if (!user) return <p>Loading user info...</p>;
+  if (loading) return <p>Loading cases...</p>;
 
-    // Update the local state immutably
-    setCases(prevCases =>
-      prevCases.map(c => (c._id === caseId ? { ...c, status: res.data.status } : c))
-    );
-  } catch (err) {
-    console.error(err);
-    alert('Failed to update case status');
-  }
-};
-
-
-  if (!user) {
-    return <p>Loading user info...</p>;
-  }
-
-  if (loading) {
-    return <p>Loading cases...</p>;
-  }
-
+  // ---------------- Client View ----------------
   if (user.role === 'Client') {
     return (
       <div className="max-w-3xl mx-auto p-6">
@@ -139,24 +129,25 @@ const FileCase = () => {
         <ul className="space-y-2">
           {cases.map((c) => (
             <li key={c._id} className="border p-3 rounded bg-gray-50">
-              <p><strong>{c.title}</strong> — {c.status}</p>
+              <p>
+                <strong>{c.title}</strong> — {c.status}
+              </p>
               <p>{c.description}</p>
               <p>Category: {c.category}</p>
               <button
-        onClick={() => handleDelete(c._id)}
-        className="bg-red-600 text-white px-4 py-2 rounded mt-2"
-      >
-        Delete
-      </button>
+                onClick={() => handleDelete(c._id)}
+                className="bg-red-600 text-white px-4 py-2 rounded mt-2"
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
-
-
       </div>
     );
   }
 
+  // ---------------- Lawyer View ----------------
   if (user.role === 'Lawyer') {
     return (
       <div className="max-w-3xl mx-auto p-6">
@@ -165,7 +156,9 @@ const FileCase = () => {
         <ul className="space-y-4">
           {cases.map((c) => (
             <li key={c._id} className="border p-4 rounded bg-gray-50">
-              <p><strong>{c.title}</strong> — {c.status}</p>
+              <p>
+                <strong>{c.title}</strong> — {c.status}
+              </p>
               <p>{c.description}</p>
               {c.status === 'Filed' && (
                 <div className="mt-3 space-x-2">
@@ -176,14 +169,13 @@ const FileCase = () => {
                     Accept
                   </button>
                   <button
-  onClick={() =>
-    setCases(prevCases => prevCases.filter(item => item._id !== c._id))
-  }
-  className="bg-red-600 text-white px-4 py-2 rounded"
->
-  Deny
-</button>
-
+                    onClick={() =>
+                      setCases(prevCases => prevCases.filter(item => item._id !== c._id))
+                    }
+                    className="bg-red-600 text-white px-4 py-2 rounded"
+                  >
+                    Deny
+                  </button>
                 </div>
               )}
             </li>

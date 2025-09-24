@@ -1,3 +1,4 @@
+
 const express = require('express');
 const { getCases, createCase, updateCaseStatus, deleteCase } = require('../controllers/CaseController');
 const { protect } = require('../middleware/authMiddleware');
@@ -10,5 +11,5 @@ router.get('/', protect, getCases);
 router.patch('/:id', protect, updateCaseStatus);
 router.delete('/:id', protect, deleteCase);
 
-
 module.exports = router;
+
