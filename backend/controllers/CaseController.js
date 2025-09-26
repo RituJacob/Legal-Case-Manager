@@ -53,12 +53,7 @@ const updateCaseStatus = async (req, res) => {
 
     // --- NOTIFICATION LOGIC ---
     if (status === 'In Progress') {
-      // The user making this request is the lawyer accepting the case.
-      // Assign the current user (the lawyer) to the case.
       caseToUpdate.lawyer = req.user._id;
-
-      // Now that the lawyer is assigned, we can create the notification.
-      // We need to populate the client field to get their ID.
       await caseToUpdate.populate('client');
 
       if (caseToUpdate.client) {
