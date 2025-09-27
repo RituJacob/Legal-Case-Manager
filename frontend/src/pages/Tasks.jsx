@@ -310,8 +310,22 @@ const FileCase = () => {
                   }
                   onDelete={(fileId) => handleDeleteFile(c._id, fileId)}
                 />
-              
+               <button
+                    onClick={() => updateCaseStatus(c._id, 'Closed')}
+                    className="bg-green-600 text-white px-4 py-3 rounded mt-4"
+                  >
+                    Close
+                  </button>
               </div>
+              )}
+
+              {c.status === 'Closed' && (
+              <button
+                    onClick={() => updateCaseStatus(c._id, 'In Progress')}
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                  >
+                    Reopen
+                  </button>
               )}
             </li>
           ))}
