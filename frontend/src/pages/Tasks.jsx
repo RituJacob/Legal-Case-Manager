@@ -17,24 +17,27 @@ const FileCase = () => {
   const [filesByCase, setFilesByCase] = useState({}); // caseId -> files
 
   useEffect(() => {
-    if (!user) return;
+  if (!user) return;
 
+  const fetchAllData = async () => {
+    setLoading(true);
 
-  const fetchCasesAndFiles = async () => {
+    let url = '/api/cases';
+    if (user.role === 'Client') url += `?clientId=${user._id}`;
+    else if (user.role === 'Lawyer') url += `?lawyerId=${user._id}`;
+
     try {
-      // Fetch cases
-      let url = '/api/cases';
-      if (user.role === 'Client') url += `?clientId=${user._id}`;
-      else if (user.role === 'Lawyer') url += `?lawyerId=${user._id}`;
+      const [casesRes, notificationsRes] = await Promise.all([
+        axiosInstance.get(url, { headers: { Authorization: `Bearer ${user.token}` } }),
+        axiosInstance.get('/api/notifications', { headers: { Authorization: `Bearer ${user.token}` } })
+      ]);
 
-      const resCases = await axiosInstance.get(url, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      setCases(resCases.data);
+      setCases(casesRes.data);
+      setNotifications(notificationsRes.data);
 
       // Fetch files for each case
       const filesData = {};
-      for (const c of resCases.data) {
+      for (const c of casesRes.data) {
         const resFiles = await axiosInstance.get(`/api/files?caseId=${c._id}`, {
           headers: { Authorization: `Bearer ${user.token}` },
         });
@@ -44,14 +47,15 @@ const FileCase = () => {
 
     } catch (err) {
       console.error(err);
-      alert('Failed to fetch cases or files');
+      alert('Failed to fetch cases, files, or notifications');
     } finally {
       setLoading(false);
     }
   };
 
-  fetchCasesAndFiles();
+  fetchAllData();
 }, [user]);
+
 
 
   const markNotificationAsRead = async (id) => {
