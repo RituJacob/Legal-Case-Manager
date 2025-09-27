@@ -1,7 +1,7 @@
 // Login Page
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 
 const Login = () => {
@@ -65,7 +65,7 @@ const Login = () => {
         </button>
 
         <p className="mt-4 text-center text-gray-600 text-sm">
-          Don't have an account? <span className="text-blue-600 font-semibold cursor-pointer hover:underline">Sign up</span>
+          Don't have an account? <Link to="/register" className="text-blue-600 font-semibold cursor-pointer hover:underline">Sign up</Link>
         </p>
       </form>
     </div>

@@ -10,34 +10,41 @@ const FileCase = () => {
     category: ''
   });
   const [cases, setCases] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return; // wait until user is loaded from context
+    if (!user) return;
 
-    const fetchCases = async () => {
+    const fetchAllData = async () => {
+      setLoading(true);
       try {
-        let url = '/api/cases';
-        if (user.role === 'Client') {
-          url += `?clientId=${user._id}`;
-        } else if (user.role === 'Lawyer') {
-          url += `?lawyerId=${user._id}`;
-        }
-
-        const res = await axiosInstance.get(url, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
-        setCases(res.data);
+        const [casesRes, notificationsRes] = await Promise.all([
+          axiosInstance.get('/api/cases', { headers: { Authorization: `Bearer ${user.token}` } }),
+          axiosInstance.get('/api/notifications', { headers: { Authorization: `Bearer ${user.token}` } })
+        ]);
+        setCases(casesRes.data);
+        setNotifications(notificationsRes.data);
       } catch (err) {
-        console.error(err);
-        alert('Failed to fetch your cases');
+        console.error("Failed to fetch data", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCases();
+    fetchAllData();
   }, [user]);
+
+  const markNotificationAsRead = async (id) => {
+    try {
+      setNotifications(prev => prev.filter(n => n._id !== id));
+      await axiosInstance.patch(`/api/notifications/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+    } catch (err) {
+      console.error('Failed to mark notification as read', err);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,13 +77,12 @@ const FileCase = () => {
   const updateCaseStatus = async (caseId, status) => {
     try {
       const res = await axiosInstance.patch(
-        `/api/cases/${caseId}`,
+        `/api/cases/${caseId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
-
       setCases(prevCases =>
-        prevCases.map(c => (c._id === caseId ? { ...c, status: res.data.status } : c))
+        prevCases.map(c => (c._id === caseId ? res.data : c))
       );
     } catch (err) {
       console.error(err);
@@ -84,13 +90,37 @@ const FileCase = () => {
     }
   };
 
-  if (!user) return <p>Loading user info...</p>;
-  if (loading) return <p>Loading cases...</p>;
+  if (loading) return <div className="text-center p-10">Loading...</div>;
 
-  // ---------------- Client View ----------------
+  const NotificationPanel = () => {
+    const unreadNotifications = notifications.filter(n => !n.read);
+    if (unreadNotifications.length === 0) return null;
+    return (
+      <div className="mb-6 bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md shadow-md">
+        <h3 className="font-bold text-lg">Notifications</h3>
+        <ul className="mt-2 space-y-2">
+          {unreadNotifications.map(notification => (
+            <li key={notification._id} className="flex justify-between items-center">
+              <span>{notification.message}</span>
+              <button
+                onClick={() => markNotificationAsRead(notification._id)}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                title="Mark as read"
+              >
+                Dismiss
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  // --- Client View ---
   if (user.role === 'Client') {
     return (
       <div className="max-w-3xl mx-auto p-6">
+        <NotificationPanel />
         <h1 className="text-2xl font-bold mb-4">File a New Case</h1>
         <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow">
           <input
@@ -147,10 +177,11 @@ const FileCase = () => {
     );
   }
 
-  // ---------------- Lawyer View ----------------
+  // --- Lawyer View ---
   if (user.role === 'Lawyer') {
     return (
       <div className="max-w-3xl mx-auto p-6">
+        <NotificationPanel />
         <h1 className="text-2xl font-bold mb-4">Cases Assigned to You</h1>
         {cases.length === 0 && <p>No cases assigned yet.</p>}
         <ul className="space-y-4">
