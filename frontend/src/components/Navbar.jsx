@@ -24,12 +24,7 @@ const Navbar = () => {
           >
             Cases
           </Link>
-          <Link
-            to="/storage"
-            className="px-3 py-2 rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Storage
-          </Link>
+         
           <Link
             to="/profile"
             className="px-3 py-2 rounded-md hover:bg-blue-600 transition-colors"
