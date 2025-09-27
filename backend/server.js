@@ -19,6 +19,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/cases', caseRoutes);
 app.use('/api/files', fileRoutes)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Export the app object for testing
 if (require.main === module) {
