@@ -1,18 +1,23 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Set up storage engine
+// Make sure uploads folder exists
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
 const storage = multer.diskStorage({
-    destination: './uploads/',
-    filename: function (req, file, cb) {        
-        cb(null, 'file-' + Date.now() + path.extname(file.originalname));
-    }
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // prepend timestamp to avoid name collisions
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
-// Initialize upload variable and specify it will handle a single file from 'myFile' form field
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10000000 }, // Limit file size
-}).single('myFile');
+const upload = multer({ storage });
 
 module.exports = upload;

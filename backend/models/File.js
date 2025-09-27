@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const fileSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        caseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Case', required: true }, 
+
     originalName: { type: String, required: true },
     path: { type: String, required: true }, // Path on the server file system
     size: { type: Number, required: true },

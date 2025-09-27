@@ -1,14 +1,20 @@
 const express = require('express');
-const router = express.Router();
 const { uploadFile, getFiles, renameFile, deleteFile } = require('../controllers/FileController');
-const { protect } = require('../middleware/authMiddleware'); 
-const upload = require('../middleware/uploadMiddleware'); 
-const { validateRename } = require('../middleware/validationMiddleware');
+const { protect } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware'); // multer setup
 
-// When POST request comes to /upload, this order
-router.post('/upload', protect, upload, uploadFile);
+const router = express.Router();
+
+// Upload a single file
+router.post('/upload', protect, upload.single('file'), uploadFile);
+
+// Get files (optionally by caseId)
 router.get('/', protect, getFiles);
-router.put('/:id', protect, validateRename, renameFile);
+
+// Rename file
+router.put('/:id', protect, renameFile);
+
+// Delete file
 router.delete('/:id', protect, deleteFile);
 
 module.exports = router;

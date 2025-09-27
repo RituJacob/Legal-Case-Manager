@@ -8,7 +8,7 @@ const FileList = ({ files, isLoading, onRename, onDelete }) => {
     }
 
     if (files.length === 0) {
-        return <p className="text-center mt-8">No files uploaded yet. Upload the first file!</p>;
+        return <p className="text-center mt-8">No files uploaded yet.</p>;
     }
 
     const handleRenameClick = (file) => {
@@ -24,7 +24,6 @@ const FileList = ({ files, isLoading, onRename, onDelete }) => {
 
     return (
         <div className="bg-white p-6 shadow-md rounded">
-            <h2 className="text-2xl font-bold mb-4">My Files</h2>
             <ul className="space-y-2">
                 {files.map(file => (
                     <li key={file._id} className="flex justify-between items-center p-3 border-b hover:bg-gray-50 rounded-md">

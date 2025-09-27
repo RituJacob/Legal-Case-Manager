@@ -1,93 +1,85 @@
-const fileRepository = require('../repositories/fileRepository');
-const { getStorageService } = require('../services/storage/storageFactory');
-const fs = require('fs');
+const File = require('../models/File');
+const Case = require('../models/Case');
 const path = require('path');
+const fs = require('fs');
 
-const storageService = getStorageService();
-
-//   code to upload file
-// route   POST /api/files/upload
+// Upload file
 exports.uploadFile = async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: 'Please upload a file' });
+  if (!req.file) return res.status(400).json({ message: 'Please upload a file' });
+
+  const { caseId } = req.body;
+
+  try {
+    const newFile = await File.create({
+      userId: req.user.id,
+      caseId,
+      originalName: req.file.originalname,
+      path: req.file.filename, // store just filename
+      size: req.file.size,
+    });
+
+    // Add reference to case's evidence
+    if (caseId) {
+      await Case.findByIdAndUpdate(caseId, { $push: { evidence: newFile._id } });
     }
 
-    try {
-        const fileData = {
-            userId: req.user.id,
-            originalName: req.file.originalname,
-            path: req.file.path,
-            size: req.file.size,
-        };
-        const newFile = await fileRepository.create(fileData);
-        res.status(201).json({ message: 'File uploaded successfully', file: newFile });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error while uploading file.' });
-    }
+    res.status(201).json({ message: 'File uploaded successfully', file: newFile });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while uploading file.' });
+  }
 };
 
-// code to list files
-// route   GET /api/files
+// Get files for a case
 exports.getFiles = async (req, res) => {
-    try {
-        const files = await fileRepository.findByUserId(req.user.id);
-        res.json(files);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
+  const { caseId } = req.query;
+
+  try {
+    if (!caseId) return res.status(400).json({ message: 'caseId is required' });
+
+    // Fetch files for that case
+    const files = await File.find({ caseId });
+
+    res.json(files);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while fetching files.' });
+  }
 };
 
-// code to rename a file
-// route -  PUT /api/files/:id
+// Rename file
 exports.renameFile = async (req, res) => {
-    try {
-        const { newName } = req.body;
-        
-        const file = await fileRepository.findById(req.params.id);
+  const { newName } = req.body;
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: 'File not found' });
+    if (file.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Unauthorized' });
 
-        //  ensure the file exists and the user owns it for safety
-        if (!file || file.userId.toString() !== req.user.id) {
-            return res.status(404).json({ message: 'File not found' });
-        }
+    const ext = path.extname(file.originalName);
+    file.originalName = newName.trim() + ext;
+    await file.save();
 
-        //Get file extension
-        const fileExtension = path.extname(file.originalName);
-        
-        
-        // This just updates the 'originalName' in the database. 
-        // only changing the user-facing name to prevent complex logic
-        
-        file.originalName = newName.trim() + fileExtension;
-
-        const updatedFile = await fileRepository.save(file);
-
-        res.json({ message: 'File renamed successfully', file: updatedFile });
-
-    } catch (error) {
-        console.error('RENAME FILE ERROR: ', error);
-        res.status(500).json({ message: 'Server error while renaming file.' });
-    }
+    res.json({ message: 'File renamed', file });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
-
-//   Delete a file
-// route   DELETE /api/files/:id
+// Delete file
 exports.deleteFile = async (req, res) => {
-    try {
-        const file = await fileRepository.findById(req.params.id);
+  try {
+    const file = await File.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: 'File not found' });
+    if (file.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Unauthorized' });
 
-        if (!file || file.userId.toString() !== req.user.id) {
-            return res.status(404).json({ message: 'File not found' });
-        }
+    // Delete file from server
+    fs.unlinkSync(path.join(__dirname, '..', 'uploads', file.path));
 
-        storageService.delete(file.path);
-        
-        // Delete the record from the database
-        await fileRepository.deleteById(req.params.id);
-
-        res.json({ message: 'File deleted successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error while deleting file.' });
-    }
+    await File.findByIdAndDelete(req.params.id);
+    res.json({ message: 'File deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };

@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { getCases, createCase, updateCaseStatus, deleteCase, assignLawyerToCase } = require('../controllers/CaseController');
 const { protect } = require('../middleware/authMiddleware');
@@ -13,4 +12,3 @@ router.patch('/:id/assign', protect, assignLawyerToCase); // New route for assig
 router.delete('/:id', protect, deleteCase);
 
 module.exports = router;
-
