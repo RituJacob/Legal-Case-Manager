@@ -60,3 +60,4 @@ const deleteCase = async (req, res) => {
 };
 
 module.exports = { getCases, createCase, updateCaseStatus, deleteCase };
+

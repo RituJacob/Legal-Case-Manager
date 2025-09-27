@@ -9,15 +9,15 @@ require('./config/db');
 
 
 const app = express();
-const fileRoutes = require('./routes/fileRoutes');
 const caseRoutes = require('./routes/caseRoutes');
+const fileRoutes = require('./routes/fileRoutes')
 
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/files', fileRoutes);
 app.use('/api/cases', caseRoutes);
+app.use('/api/files', fileRoutes)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Export the app object for testing

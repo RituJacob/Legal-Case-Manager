@@ -2,46 +2,47 @@ import { useState } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useAuth } from '../context/AuthContext';
 
-const FileUpload = ({ onUploadSuccess }) => {
+const FileUpload = ({ caseId, onUploadSuccess }) => {
     const [file, setFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const { user } = useAuth();
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-    };
+    const handleFileChange = (e) => setFile(e.target.files[0]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) {
-            alert('Please select a file to upload.');
+        if (!file || !caseId) {
+            alert('Please select a file and ensure caseId is valid.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('myFile', file); // 'myFile' must match the multer config
+        formData.append('file', file);
+        formData.append('caseId', caseId);
 
         setIsUploading(true);
         try {
-            await axiosInstance.post('/api/files/upload', formData, {
+            const res = await axiosInstance.post('/api/files/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${user.token}`,
                 },
             });
+            console.log('Upload response:', res.data);
             alert('File uploaded successfully!');
-            onUploadSuccess(); // this refreshes the file list later
-        } catch (error) {
-            alert('File upload failed.');
+            onUploadSuccess();
+        } catch (err) {
+            console.error('File upload error:', err.response || err);
+            alert('File upload failed. Check console for details.');
         } finally {
             setIsUploading(false);
-            e.target.reset(); // Clear the form input
+            setFile(null); // reset selected file
+            e.target.reset(); // reset form
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded mb-6">
-            <h2 className="text-2xl font-bold mb-4">Upload a New File</h2>
             <input
                 type="file"
                 onChange={handleFileChange}

@@ -1,27 +1,4 @@
-// Case schema 
-
 const mongoose = require('mongoose');
-if (mongoose.models.Case) {
-  delete mongoose.models.Case;
-}
-const evidenceSchema = new mongoose.Schema({
-  fileName: String,
-  fileUrl: String,
-  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  uploadedAt: { type: Date, default: Date.now }
-});
-
-const hearingSchema = new mongoose.Schema({
-  date: { type: Date, required: true },
-  notes: String,
-  outcome: String,
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-});
-
-const accessSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  permission: { type: String, enum: ['View','Edit'], default: 'View' }
-});
 
 const caseSchema = new mongoose.Schema({
   caseNumber: { type: String, required: true, unique: true },
@@ -29,21 +6,17 @@ const caseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, enum: ['Civil', 'Criminal', 'Family', 'Corporate'], required: true },
   client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  lawyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // assigned lawyer
+  lawyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   status: { type: String, enum: ['Filed','In Progress','Hearing Scheduled','Closed'], default: 'Filed' },
-  evidence: [evidenceSchema],
-  hearings: [hearingSchema],
-  accessList: [accessSchema],
+  evidence: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-caseSchema.pre('save', function(next){
+caseSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-//module.exports = mongoose.model('Case', caseSchema);
-//module.exports = Case;
+// ✅ Safe export to avoid OverwriteModelError
 module.exports = mongoose.models.Case || mongoose.model('Case', caseSchema);
-

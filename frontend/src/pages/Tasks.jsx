@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useAuth } from '../context/AuthContext';
+import FileUpload from '../components/FileUpload';
+import FileList from '../components/FileList';
 
 const FileCase = () => {
   const { user } = useAuth();
@@ -11,11 +13,12 @@ const FileCase = () => {
   });
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filesByCase, setFilesByCase] = useState({}); // caseId -> files
 
   useEffect(() => {
     if (!user) return; // wait until user is loaded from context
 
-    const fetchCases = async () => {
+    /*const fetchCases = async () => {
       try {
         let url = '/api/cases';
         if (user.role === 'Client') {
@@ -37,7 +40,39 @@ const FileCase = () => {
     };
 
     fetchCases();
-  }, [user]);
+  }, [user]);*/
+  const fetchCasesAndFiles = async () => {
+    try {
+      // Fetch cases
+      let url = '/api/cases';
+      if (user.role === 'Client') url += `?clientId=${user._id}`;
+      else if (user.role === 'Lawyer') url += `?lawyerId=${user._id}`;
+
+      const resCases = await axiosInstance.get(url, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setCases(resCases.data);
+
+      // Fetch files for each case
+      const filesData = {};
+      for (const c of resCases.data) {
+        const resFiles = await axiosInstance.get(`/api/files?caseId=${c._id}`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        filesData[c._id] = resFiles.data;
+      }
+      setFilesByCase(filesData);
+
+    } catch (err) {
+      console.error(err);
+      alert('Failed to fetch cases or files');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCasesAndFiles();
+}, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,6 +116,56 @@ const FileCase = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to update case status');
+    }
+  };
+
+  const handleFileUploaded = async (caseId) => {
+    try {
+      const res = await axiosInstance.get(`/api/files?caseId=${caseId}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setFilesByCase((prev) => ({ ...prev, [caseId]: res.data }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRenameFile = async (caseId, fileId, newName) => {
+    try {
+      const res = await axiosInstance.put(
+        `/api/files/${fileId}`,
+        { newName },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      setFilesByCase((prev) => ({
+        ...prev,
+        [caseId]: prev[caseId].map((f) =>
+          f._id === fileId ? res.data.file : f
+        ),
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to rename file");
+    }
+  };
+
+  const handleDeleteFile = async (caseId, fileId) => {
+    if (
+      !window.confirm("Are you sure you want to permanently delete this file?")
+    )
+      return;
+
+    try {
+      await axiosInstance.delete(`/api/files/${fileId}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setFilesByCase((prev) => ({
+        ...prev,
+        [caseId]: prev[caseId].filter((f) => f._id !== fileId),
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete file");
     }
   };
 
@@ -134,6 +219,24 @@ const FileCase = () => {
               </p>
               <p>{c.description}</p>
               <p>Category: {c.category}</p>
+
+              {/* File Upload & List */}
+              <div className="mt-4">
+                <h3 className="font-semibold">Evidence Files</h3>
+            
+                <FileUpload caseId={c._id} onUploadSuccess={() => handleFileUploaded(c._id)} />
+                <FileList
+                  files={filesByCase[c._id] || []}
+                  onRename={(fileId, newName) =>
+                    handleRenameFile(c._id, fileId, newName)
+                  }
+                  onDelete={(fileId) => handleDeleteFile(c._id, fileId)}
+                />
+              
+              </div>
+
+              
+              
               <button
                 onClick={() => handleDelete(c._id)}
                 className="bg-red-600 text-white px-4 py-2 rounded mt-2"
@@ -177,6 +280,21 @@ const FileCase = () => {
                     Deny
                   </button>
                 </div>
+              )}
+              {c.status === 'In Progress' && (
+              <div className="mt-4">
+                <h3 className="font-semibold">Evidence Files</h3>
+            
+                <FileUpload caseId={c._id} onUploadSuccess={() => handleFileUploaded(c._id)} />
+                <FileList
+                  files={filesByCase[c._id] || []}
+                  onRename={(fileId, newName) =>
+                    handleRenameFile(c._id, fileId, newName)
+                  }
+                  onDelete={(fileId) => handleDeleteFile(c._id, fileId)}
+                />
+              
+              </div>
               )}
             </li>
           ))}
