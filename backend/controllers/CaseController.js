@@ -9,6 +9,7 @@ const getCases = async (req, res) => {
   try {
     const caseRepository = caseRepositoryProxyFactory(req.user);
     const cases = await caseRepository.findForUser(req.user);
+    cases.sort();
     res.json(cases);
   } catch (error) {
     console.error(error);

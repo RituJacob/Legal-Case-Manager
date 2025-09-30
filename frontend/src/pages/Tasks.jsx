@@ -265,6 +265,13 @@ const FileCase = () => {
               </button>
             </li>
           ))}
+
+          { /* Sort Button */ }
+
+          <button
+          >
+            Sort by Alphabetical
+          </button>
         </ul>
       </div>
     );
