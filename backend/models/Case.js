@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const notificationService = require('../services/notificationService'); // Import the notification service
 
 const caseSchema = new mongoose.Schema({
   caseNumber: { type: String, required: true, unique: true },
@@ -13,10 +14,32 @@ const caseSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// --- OOP METHOD ---
+// This method encapsulates the business logic for a lawyer accepting a case.
+caseSchema.methods.acceptCase = async function(acceptingLawyer) {
+  if (this.status !== 'Filed') {
+    throw new Error('Case has already been accepted or is not in a state to be accepted.');
+  }
+
+  // 1. Update the case object's data
+  this.lawyer = acceptingLawyer._id;
+  this.status = 'In Progress';
+
+  // 2. Handle the side-effect (the notification)
+  // We need to ensure the client is populated to get their ID
+  await this.populate('client');
+  if (this.client) {
+    const message = `Lawyer ${acceptingLawyer.name} has accepted your case: "${this.title}".`;
+    await notificationService.createNotification(this.client._id, message, this._id);
+  }
+
+  // 3. Save the changes to the database
+  return this.save();
+};
+
 caseSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// ✅ Safe export to avoid OverwriteModelError
 module.exports = mongoose.models.Case || mongoose.model('Case', caseSchema);
