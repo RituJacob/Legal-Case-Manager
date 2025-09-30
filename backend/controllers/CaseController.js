@@ -45,31 +45,28 @@ const updateCaseStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const caseId = req.params.id;
+    const user = req.user; // The lawyer performing the action
 
-    const caseToUpdate = await Case.findById(caseId);
-
-    if (!caseToUpdate) {
-      return res.status(404).json({ message: 'Case not found' });
-    }
-
-    // --- NOTIFICATION LOGIC ---
+    // We only handle the "accept" action here for now
     if (status === 'In Progress') {
-      caseToUpdate.lawyer = req.user._id;
-      await caseToUpdate.populate('client');
-
-      if (caseToUpdate.client) {
-        const message = `Lawyer ${req.user.name} has accepted your case: "${caseToUpdate.title}".`;
-        await notificationService.createNotification(caseToUpdate.client._id, message, caseToUpdate._id);
+      const caseToUpdate = await Case.findById(caseId);
+      if (!caseToUpdate) {
+        return res.status(404).json({ message: 'Case not found' });
       }
+
+      // --- CALL THE OOP METHOD ---
+      // All the complex logic is now hidden inside the acceptCase method.
+      const updatedCase = await caseToUpdate.acceptCase(user);
+      
+      res.json(updatedCase);
+    } else {
+      // Handle other status updates if necessary, perhaps with the repository
+      const caseRepository = caseRepositoryProxyFactory(req.user);
+      const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
+      res.json(updatedCase);
     }
-    // --- END NOTIFICATION LOGIC ---
-
-    // Now, proceed with the existing repository logic to perform the update    
-    const caseRepository = caseRepositoryProxyFactory(req.user);
-    const updatedCase = await caseRepository.updateCaseStatus(req.params.id, req.body.status);
-
-    res.json(updatedCase);
   } catch (err) {
+    console.error('Error updating case status:', err);
     res.status(500).json({ message: err.message || 'Failed to update case status' });
   }
 };
