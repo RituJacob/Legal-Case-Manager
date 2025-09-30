@@ -19,7 +19,6 @@ class NotificationService {
       return notification;
     } catch (error) {
       console.error('Error creating notification:', error);
-      // In a real app, you might throw the error to be handled by the caller
     }
   }
 }
