@@ -29,7 +29,7 @@ const FileList = ({ files, isLoading, onRename, onDelete }) => {
                     <li key={file._id} className="flex justify-between items-center p-3 border-b hover:bg-gray-50 rounded-md">
                         {/* The link points to the file on the server */}
                         <a
-                            href={`${API_BASE_URL}/${file.path}`}
+                            href={`${API_BASE_URL}/uploads/${file.path}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline font-medium"

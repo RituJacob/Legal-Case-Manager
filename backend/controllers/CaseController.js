@@ -60,41 +60,17 @@ const updateCaseStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const caseId = req.params.id;
-    const user = req.user; // The lawyer performing the action
 
-    // We only handle the "accept" action here for now
-    if (status === 'In Progress') {
-      const caseToUpdate = await Case.findById(caseId);
-      if (!caseToUpdate) {
-        return res.status(404).json({ message: 'Case not found' });
-      }
+    const caseRepository = caseRepositoryProxyFactory(req.user);
+    const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
 
-      // --- CALL THE OOP METHOD ---
-      // All the complex logic is now hidden inside the acceptCase method.
-      const updatedCase = await caseToUpdate.acceptCase(user);
-      
-      res.json(updatedCase);
-    } else if (status === 'Closed') {
-      const caseToClose = await Case.findById(caseId);
-      if (!caseToClose) {
-        return res.status(404).json({ message: 'Case not found' });
-      }
-
-      // OOP for notifying closed case
-      const updatedClosedCase = await caseToClose.closeCase(user);
-
-      res.json(updatedClosedCase);
-    } else {
-      // Handle other status updates if necessary, perhaps with the repository
-      const caseRepository = caseRepositoryProxyFactory(req.user);
-      const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
-      res.json(updatedCase);
-    } 
+    res.json(updatedCase);
   } catch (err) {
     console.error('Error updating case status:', err);
     res.status(500).json({ message: err.message || 'Failed to update case status' });
   }
 };
+
 
 // @desc Delete case
 const deleteCase = async (req, res) => {

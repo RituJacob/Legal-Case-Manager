@@ -37,21 +37,29 @@ class CaseRepositoryProxy {
 
   // Update case status
   async updateCaseStatus(id, status) {
-    console.log(`[Proxy] Updating case ${id} to status: ${status}`);
+  const existingCase = await this.realRepository.findById(id);
+  if (!existingCase) throw new Error('Case not found');
 
-    const existingCase = await this.realRepository.findById(id);
-    if (!existingCase) {
-      throw new Error('Case not found');
-    }
-
-    // Only admin can update ANY case
-    if (this.user.role !== 'Lawyer') {
-      throw new Error('Not authorized to update case status');
-    }
-
+  // Clients can only reopen their own Closed cases
+  if (this.user.role.toLowerCase() === 'client' &&
+      existingCase.status === 'Closed' &&
+      status === 'In Progress' &&
+      existingCase.client.toString() === this.user._id.toString()) {
     existingCase.status = status;
+    console.log(`[Proxy] Client ${this.user._id} reopened case ${id}`);
     return this.realRepository.save(existingCase);
   }
+
+  // Lawyers can update any status
+  if (this.user.role.toLowerCase() === 'lawyer') {
+    existingCase.status = status;
+    console.log(`[Proxy] Lawyer ${this.user._id} updated case ${id} to ${status}`);
+    return this.realRepository.save(existingCase);
+  }
+
+  throw new Error('Not authorized to update case status');
+}
+
 
   // Delete case
   async deleteById(id) {
