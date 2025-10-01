@@ -34,6 +34,13 @@ findAll() {
       .sort({ createdAt: -1 });
   }
 
+sortAllSortedTitle() {
+    return Case.find()
+        .populate('client', 'name email')
+        .populate('lawyer', 'name email specialization')
+        .sort({ title: 1 });
+}
+
     /**
      * Finds each single case by its ID.
      */

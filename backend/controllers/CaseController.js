@@ -9,12 +9,28 @@ const getCases = async (req, res) => {
   try {
     const caseRepository = caseRepositoryProxyFactory(req.user);
     const cases = await caseRepository.findForUser(req.user);
+    cases.sort();
     res.json(cases);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message || 'Server error fetching cases' });
   }
 };
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // 
+// DEFUNCTED
+// @desc Sort Cases in descending order
+const sortCasesTitle = async (req, res) => {
+  try {
+    const caseRepository = caseRepositoryProxyFactory(req.user);
+    const cases = await caseRepository.findForUser(req.user);
+    cases.sort( {title : 1 });
+    res.json(cases);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message || 'Server error sorting cases' });
+  }
+};
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // 
 
 // @desc File a new case
 const createCase = async (req, res) => {
@@ -58,12 +74,22 @@ const updateCaseStatus = async (req, res) => {
       const updatedCase = await caseToUpdate.acceptCase(user);
       
       res.json(updatedCase);
+    } else if (status === 'Closed') {
+      const caseToClose = await Case.findById(caseId);
+      if (!caseToClose) {
+        return res.status(404).json({ message: 'Case not found' });
+      }
+
+      // OOP for notifying closed case
+      const updatedClosedCase = await caseToClose.closeCase(user);
+
+      res.json(updatedClosedCase);
     } else {
       // Handle other status updates if necessary, perhaps with the repository
       const caseRepository = caseRepositoryProxyFactory(req.user);
       const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
       res.json(updatedCase);
-    }
+    } 
   } catch (err) {
     console.error('Error updating case status:', err);
     res.status(500).json({ message: err.message || 'Failed to update case status' });

@@ -16,6 +16,7 @@ const FileCase = () => {
   const [loading, setLoading] = useState(true);
   const [filesByCase, setFilesByCase] = useState({}); // caseId -> files
 
+
   useEffect(() => {
   if (!user) return;
 
@@ -52,12 +53,9 @@ const FileCase = () => {
       setLoading(false);
     }
   };
-
+  
   fetchAllData();
 }, [user]);
-
-
-
   const markNotificationAsRead = async (id) => {
     try {
       setNotifications(prev => prev.filter(n => n._id !== id));

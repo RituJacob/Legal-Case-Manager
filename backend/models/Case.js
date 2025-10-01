@@ -42,4 +42,24 @@ caseSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.models.Case || mongoose.model('Case', caseSchema);
+// Notifies when case has been closed (Decorate Pattern)
+
+caseSchema.methods.closeCase = async function(acceptingLawyer) {
+  this.lawyer = acceptingLawyer;
+  this.status = 'Closed';
+
+  await this.populate('client');
+  if (this.client) {
+    const message = `Case ${this.title} has been closed.`;
+    await notificationService.createNotification(this.client._id, message, this._id);
+  }
+  await this.populate('lawyer');
+  if (this.admin) {
+    const message = `Notice!! Case ${this.title} has been closed!`;
+    await notificationService.createNotification(this.admin._id, message, this._id);
+  };
+
+  return this.save();
+}
+
+module.exports = mongoose.models.Case || mongoose.model('Case', caseSchema)

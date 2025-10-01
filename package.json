@@ -15,6 +15,7 @@
   "author": "Task Manager Team",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "multer": "^2.0.2"
   }
 }
