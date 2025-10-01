@@ -16,6 +16,16 @@ class CaseRepositoryProxy {
     return this.realRepository.findForUser(user);
   }
 
+  // Sort Cases
+  async findForUser(user) {
+    console.log(`[Proxy] Fetching cases for user: ${user._id}`);
+    if (this.user.role === 'lawyer') {
+      // admins see all
+      return this.realRepository.findAllSortedTitle();
+    }
+    return this.realRepository.findForUser(user);
+  }
+
   // Create a case (clients + admins allowed)
   async create(caseData) {
     console.log(`[Proxy] Creating case: ${caseData.title}`);
