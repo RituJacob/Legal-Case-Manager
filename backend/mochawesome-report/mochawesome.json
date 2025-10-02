@@ -1,0 +1,976 @@
+{
+  "stats": {
+    "suites": 15,
+    "tests": 23,
+    "passes": 16,
+    "pending": 0,
+    "failures": 7,
+    "start": "2025-10-02T14:16:42.067Z",
+    "end": "2025-10-02T14:16:42.159Z",
+    "duration": 92,
+    "testsRegistered": 23,
+    "passPercent": 69.56521739130434,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "7ca86733-05bf-421a-bba5-a8efd2a62a17",
+      "title": "",
+      "fullFile": "",
+      "file": "",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "52980c57-bcc6-4060-9a95-f0163c8bf300",
+          "title": "CaseController",
+          "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+          "file": "\\test\\caseController.test.js",
+          "beforeHooks": [
+            {
+              "title": "\"before each\" hook in \"CaseController\"",
+              "fullTitle": "CaseController \"before each\" hook in \"CaseController\"",
+              "timedOut": false,
+              "duration": 4,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox = sinon.createSandbox();\n\nreq = {\n    body: {},\n    params: {},\n    user: { _id: VALID_USER_ID, role: 'Client' },\n};\nres = {\n    status: sandbox.stub().returnsThis(),\n    json: sandbox.stub(),\n};\n// This is our fake repository object. It's what we WANT the controller to use.\nmockCaseRepository = {\n    findForUser: sandbox.stub(),\n    create: sandbox.stub(),\n    updateCaseStatus: sandbox.stub(),\n    deleteById: sandbox.stub(),\n};\n// Create a fake factory function that returns our mock repository\nconst caseRepositoryProxyFactoryMock = () => mockCaseRepository;\n// Use proxyquire to load the controller.\n// When the controller tries to require('../repositories/caseRepositoryProxy'),\n// proxyquire will give it our fake factory instead.\nconst controller = proxyquire('../controllers/CaseController', {\n    '../repositories/caseRepositoryProxy': caseRepositoryProxyFactoryMock\n});\n// Destructure the controller functions for use in tests\ngetCases = controller.getCases;\ncreateCase = controller.createCase;\nupdateCaseStatus = controller.updateCaseStatus;\ndeleteCase = controller.deleteCase;\nassignLawyerToCase = controller.assignLawyerToCase;",
+              "err": {},
+              "uuid": "9ae7b066-1972-4593-a927-2d5284a177b3",
+              "parentUUID": "52980c57-bcc6-4060-9a95-f0163c8bf300",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "afterHooks": [
+            {
+              "title": "\"after each\" hook in \"CaseController\"",
+              "fullTitle": "CaseController \"after each\" hook in \"CaseController\"",
+              "timedOut": false,
+              "duration": 0,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox.restore();",
+              "err": {},
+              "uuid": "03e3cf30-e3f5-4324-8470-83922842df04",
+              "parentUUID": "52980c57-bcc6-4060-9a95-f0163c8bf300",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "tests": [],
+          "suites": [
+            {
+              "uuid": "d55d62ae-b0d8-4707-a042-d766f131eef4",
+              "title": "getCases",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+              "file": "\\test\\caseController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should fetch and return cases for a user",
+                  "fullTitle": "CaseController getCases should fetch and return cases for a user",
+                  "timedOut": false,
+                  "duration": 3,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "const cases = [{ title: 'Case 1' }, { title: 'Case 2' }];\nmockCaseRepository.findForUser.resolves(cases);\nawait getCases(req, res);\n\nexpect(mockCaseRepository.findForUser).to.have.been.calledWith(req.user);\nexpect(res.json).to.have.been.calledWith([...cases].sort());",
+                  "err": {},
+                  "uuid": "c82c8a11-70a8-480b-94d8-77cb74c5dbe2",
+                  "parentUUID": "d55d62ae-b0d8-4707-a042-d766f131eef4",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "c82c8a11-70a8-480b-94d8-77cb74c5dbe2"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 3,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "0bf2cf1f-a4e9-4a25-9174-9faaf5a80dcc",
+              "title": "createCase",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+              "file": "\\test\\caseController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should create a new case successfully",
+                  "fullTitle": "CaseController createCase should create a new case successfully",
+                  "timedOut": false,
+                  "duration": 2,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.body = { title: 'New Case', description: 'Details', category: 'Civil' };\nconst savedCase = { _id: VALID_CASE_ID, ...req.body, client: req.user._id };\nmockCaseRepository.create.resolves(savedCase);\nawait createCase(req, res);\n\nconst createArg = mockCaseRepository.create.getCall(0).args[0];\nexpect(createArg).to.have.property('title', 'New Case');\nexpect(createArg).to.have.property('client', VALID_USER_ID);\nexpect(res.status).to.have.been.calledWith(201);\nexpect(res.json).to.have.been.calledWith(savedCase);",
+                  "err": {},
+                  "uuid": "11ea6dba-8fb2-4be7-83f3-18340dea2a3b",
+                  "parentUUID": "0bf2cf1f-a4e9-4a25-9174-9faaf5a80dcc",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "11ea6dba-8fb2-4be7-83f3-18340dea2a3b"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 2,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "ac3439e0-0590-4998-bdca-fef7e4223de8",
+              "title": "updateCaseStatus",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+              "file": "\\test\\caseController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should update the status of a case",
+                  "fullTitle": "CaseController updateCaseStatus should update the status of a case",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = VALID_CASE_ID;\nreq.body.status = 'In Progress';\nconst updatedCase = { _id: VALID_CASE_ID, status: 'In Progress' };\nmockCaseRepository.updateCaseStatus.resolves(updatedCase);\nawait updateCaseStatus(req, res);\nexpect(mockCaseRepository.updateCaseStatus).to.have.been.calledWith(VALID_CASE_ID, 'In Progress');\nexpect(res.json).to.have.been.calledWith(updatedCase);",
+                  "err": {},
+                  "uuid": "dff13954-29e8-4c58-a54e-02ec8095b7ea",
+                  "parentUUID": "ac3439e0-0590-4998-bdca-fef7e4223de8",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "dff13954-29e8-4c58-a54e-02ec8095b7ea"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 1,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "2ce3d499-9921-4043-8476-a27c6578e917",
+              "title": "deleteCase",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+              "file": "\\test\\caseController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should delete a case successfully",
+                  "fullTitle": "CaseController deleteCase should delete a case successfully",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = VALID_CASE_ID;\nmockCaseRepository.deleteById.resolves();\nawait deleteCase(req, res);\nexpect(mockCaseRepository.deleteById).to.have.been.calledWith(VALID_CASE_ID);\nexpect(res.json).to.have.been.calledWith({ message: 'Case deleted successfully', id: VALID_CASE_ID });",
+                  "err": {},
+                  "uuid": "9326272a-65f1-491b-8e97-7e20c0451f7d",
+                  "parentUUID": "2ce3d499-9921-4043-8476-a27c6578e917",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "9326272a-65f1-491b-8e97-7e20c0451f7d"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 1,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+              "title": "assignLawyerToCase",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\caseController.test.js",
+              "file": "\\test\\caseController.test.js",
+              "beforeHooks": [
+                {
+                  "title": "\"before each\" hook in \"assignLawyerToCase\"",
+                  "fullTitle": "CaseController assignLawyerToCase \"before each\" hook in \"assignLawyerToCase\"",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": null,
+                  "speed": null,
+                  "pass": false,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "mockCase = {\n    _id: VALID_CASE_ID,\n    lawyer: null,\n    save: sandbox.stub().resolvesThis(),\n};\nfindCaseByIdStub = sandbox.stub(Case, 'findById').resolves(mockCase);\nfindUserByIdStub = sandbox.stub(User, 'findById');",
+                  "err": {},
+                  "uuid": "0b53397e-9a24-4266-a41a-b5b6d838fcd5",
+                  "parentUUID": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+                  "isHook": true,
+                  "skipped": false
+                }
+              ],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should assign a lawyer to a case successfully",
+                  "fullTitle": "CaseController assignLawyerToCase should assign a lawyer to a case successfully",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = VALID_CASE_ID;\nreq.body.lawyerId = VALID_LAWYER_ID;\nconst mockLawyer = { _id: VALID_LAWYER_ID, role: 'lawyer' };\nfindUserByIdStub.resolves(mockLawyer);\nawait assignLawyerToCase(req, res);\nexpect(findCaseByIdStub).to.have.been.calledWith(VALID_CASE_ID);\nexpect(findUserByIdStub).to.have.been.calledWith(VALID_LAWYER_ID);\nexpect(mockCase.lawyer).to.equal(VALID_LAWYER_ID);\nexpect(res.status).to.have.been.calledWith(200);",
+                  "err": {},
+                  "uuid": "c7758cc3-3d7d-4a2f-b6aa-ce5725abda95",
+                  "parentUUID": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 400 if lawyerId is not provided",
+                  "fullTitle": "CaseController assignLawyerToCase should return 400 if lawyerId is not provided",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.body.lawyerId = undefined;\nawait assignLawyerToCase(req, res);\nexpect(res.status).to.have.been.calledWith(400);",
+                  "err": {},
+                  "uuid": "9c00285a-7f82-40c3-86a3-a6029c8624ae",
+                  "parentUUID": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 404 if case or lawyer is not found",
+                  "fullTitle": "CaseController assignLawyerToCase should return 404 if case or lawyer is not found",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "findCaseByIdStub.resolves(null);\nreq.params.id = VALID_CASE_ID;\nreq.body.lawyerId = VALID_LAWYER_ID;\n\nawait assignLawyerToCase(req, res);\nexpect(res.status).to.have.been.calledWith(404);",
+                  "err": {},
+                  "uuid": "0150e868-945f-4417-9727-8c524bd50778",
+                  "parentUUID": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 400 if the user is not a lawyer",
+                  "fullTitle": "CaseController assignLawyerToCase should return 400 if the user is not a lawyer",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = VALID_CASE_ID;\nreq.body.lawyerId = VALID_LAWYER_ID;\nconst notALawyer = { _id: VALID_LAWYER_ID, role: 'Client' };\nfindUserByIdStub.resolves(notALawyer);\nawait assignLawyerToCase(req, res);\n\nexpect(res.status).to.have.been.calledWith(400);",
+                  "err": {},
+                  "uuid": "cf899520-6609-44e9-a1b3-bc5a08d3f26a",
+                  "parentUUID": "8a1793fd-359f-45a8-aae6-c4bfba846168",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "c7758cc3-3d7d-4a2f-b6aa-ce5725abda95",
+                "9c00285a-7f82-40c3-86a3-a6029c8624ae",
+                "0150e868-945f-4417-9727-8c524bd50778",
+                "cf899520-6609-44e9-a1b3-bc5a08d3f26a"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 2,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            }
+          ],
+          "passes": [],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 0,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        },
+        {
+          "uuid": "815162f9-bc93-4a08-b0f4-3ca597867092",
+          "title": "Case Controller Tests",
+          "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\example_test.js",
+          "file": "\\test\\example_test.js",
+          "beforeHooks": [
+            {
+              "title": "\"before each\" hook in \"Case Controller Tests\"",
+              "fullTitle": "Case Controller Tests \"before each\" hook in \"Case Controller Tests\"",
+              "timedOut": false,
+              "duration": 0,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox = sinon.createSandbox();",
+              "err": {},
+              "uuid": "2e502dd1-86a6-44f5-8e7f-c0eabb871ada",
+              "parentUUID": "815162f9-bc93-4a08-b0f4-3ca597867092",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "afterHooks": [
+            {
+              "title": "\"after each\" hook in \"Case Controller Tests\"",
+              "fullTitle": "Case Controller Tests \"after each\" hook in \"Case Controller Tests\"",
+              "timedOut": false,
+              "duration": 0,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox.restore();",
+              "err": {},
+              "uuid": "166f33d1-d833-4581-a1fb-e09651a8f534",
+              "parentUUID": "815162f9-bc93-4a08-b0f4-3ca597867092",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "tests": [],
+          "suites": [
+            {
+              "uuid": "8e0c827a-aea6-4a9e-be50-f59207f2c18a",
+              "title": "createCase",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\example_test.js",
+              "file": "\\test\\example_test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should create a new case successfully",
+                  "fullTitle": "Case Controller Tests createCase should create a new case successfully",
+                  "timedOut": false,
+                  "duration": 8,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "const req = { body: { title: 'Test Case', description: 'Test Desc', category: 'Test' }, user: { _id: '1' } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nconst savedCase = { title: 'Test Case', description: 'Test Desc', category: 'Test', caseNumber: 'uuid', status: 'Filed', client: '1', _id: '1' };\nsandbox.stub(Case.prototype, 'save').resolves(savedCase);\nawait CaseController.createCase(req, res);\nexpect(res.status.calledWith(201)).to.be.true;\nexpect(res.json.calledWith(savedCase)).to.be.true;",
+                  "err": {},
+                  "uuid": "9820b157-eebc-44b3-81c8-e1a87a942745",
+                  "parentUUID": "8e0c827a-aea6-4a9e-be50-f59207f2c18a",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 400 if required fields missing",
+                  "fullTitle": "Case Controller Tests createCase should return 400 if required fields missing",
+                  "timedOut": false,
+                  "duration": 3,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "const req = { body: {} };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.createCase(req, res);\nexpect(res.status.calledWith(400)).to.be.true;\nexpect(res.json.calledWith({ message: 'Title, description and category are required' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:38:47)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "58641ed1-fbda-455b-9d1f-1d7a56df7af5",
+                  "parentUUID": "8e0c827a-aea6-4a9e-be50-f59207f2c18a",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 500 on DB error",
+                  "fullTitle": "Case Controller Tests createCase should return 500 on DB error",
+                  "timedOut": false,
+                  "duration": 3,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "const req = { body: { title: 'Test Case', description: 'Test Desc', category: 'Test' }, user: { _id: '1' } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nsandbox.stub(Case.prototype, 'save').rejects(new Error('DB Error'));\nawait CaseController.createCase(req, res);\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWith({ message: 'Failed to create case' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:50:78)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "eb30862b-8627-4a48-91a6-7f4e0b997f67",
+                  "parentUUID": "8e0c827a-aea6-4a9e-be50-f59207f2c18a",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "9820b157-eebc-44b3-81c8-e1a87a942745"
+              ],
+              "failures": [
+                "58641ed1-fbda-455b-9d1f-1d7a56df7af5",
+                "eb30862b-8627-4a48-91a6-7f4e0b997f67"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 14,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "d43fe43b-a518-4b11-9310-8b55f3da6cce",
+              "title": "updateCaseStatus",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\example_test.js",
+              "file": "\\test\\example_test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return 404 if case not found",
+                  "fullTitle": "Case Controller Tests updateCaseStatus should return 404 if case not found",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "sandbox.stub(Case, 'findById').resolves(null);\nconst req = { params: { id: '1' }, body: { status: 'Closed' } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.updateCaseStatus(req, res);\nexpect(res.status.calledWith(404)).to.be.true;\nexpect(res.json.calledWith({ message: 'Case not found' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:62:47)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "05c6f3b5-fe93-41c7-8da5-ea002e061e32",
+                  "parentUUID": "d43fe43b-a518-4b11-9310-8b55f3da6cce",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 500 on DB error",
+                  "fullTitle": "Case Controller Tests updateCaseStatus should return 500 on DB error",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "sandbox.stub(Case, 'findById').rejects(new Error('DB Error'));\nconst req = { params: { id: '1' }, body: { status: 'Closed' } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.updateCaseStatus(req, res);\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWith({ message: 'Failed to update case status' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:73:85)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "ade6e23e-e80b-4c82-8cdf-b5ca1d4f2deb",
+                  "parentUUID": "d43fe43b-a518-4b11-9310-8b55f3da6cce",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "05c6f3b5-fe93-41c7-8da5-ea002e061e32",
+                "ade6e23e-e80b-4c82-8cdf-b5ca1d4f2deb"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 2,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "573fbaff-586b-4a6d-84b2-f212812d4d60",
+              "title": "deleteCase",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\example_test.js",
+              "file": "\\test\\example_test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return 404 if case not found",
+                  "fullTitle": "Case Controller Tests deleteCase should return 404 if case not found",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "sandbox.stub(Case, 'findById').resolves(null);\nconst req = { params: { id: '1' }, user: { _id: { toString: () => '1' } } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.deleteCase(req, res);\nexpect(res.status.calledWith(404)).to.be.true;\nexpect(res.json.calledWith({ message: 'Case not found' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:85:47)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "8862e770-b2bd-4b18-b861-f94a1930be64",
+                  "parentUUID": "573fbaff-586b-4a6d-84b2-f212812d4d60",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 500 on DB error",
+                  "fullTitle": "Case Controller Tests deleteCase should return 500 on DB error",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "sandbox.stub(Case, 'findById').rejects(new Error('DB Error'));\nconst req = { params: { id: '1' }, user: { _id: { toString: () => '1' } } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.deleteCase(req, res);\nexpect(res.status.calledWith(500)).to.be.true;\nexpect(res.json.calledWith({ message: 'Failed to delete case' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:96:78)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "722202f2-7b60-45b5-95e8-6008284c129b",
+                  "parentUUID": "573fbaff-586b-4a6d-84b2-f212812d4d60",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 403 if user not authorized",
+                  "fullTitle": "Case Controller Tests deleteCase should return 403 if user not authorized",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "const fakeCase = { client: { toString: () => '2' } };\nsandbox.stub(Case, 'findById').resolves(fakeCase);\nconst req = { params: { id: '1' }, user: { _id: { toString: () => '1' } } };\nconst res = { status: sinon.stub().returnsThis(), json: sinon.stub() };\nawait CaseController.deleteCase(req, res);\nexpect(res.status.calledWith(403)).to.be.true;\nexpect(res.json.calledWith({ message: 'Not authorized to delete this case' })).to.be.true;",
+                  "err": {
+                    "message": "AssertionError: expected false to be true",
+                    "estack": "AssertionError: expected false to be true\n    at Context.<anonymous> (test\\example_test.js:106:47)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+                    "diff": "- false\n+ true\n"
+                  },
+                  "uuid": "0d0f6dfa-19ab-45c1-842c-c93b25bcd24b",
+                  "parentUUID": "573fbaff-586b-4a6d-84b2-f212812d4d60",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "8862e770-b2bd-4b18-b861-f94a1930be64",
+                "722202f2-7b60-45b5-95e8-6008284c129b",
+                "0d0f6dfa-19ab-45c1-842c-c93b25bcd24b"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 3,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            }
+          ],
+          "passes": [],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 0,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        },
+        {
+          "uuid": "3690b507-3563-4a17-81e1-32f19dccc500",
+          "title": "FileController",
+          "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\fileController.test.js",
+          "file": "\\test\\fileController.test.js",
+          "beforeHooks": [
+            {
+              "title": "\"before each\" hook in \"FileController\"",
+              "fullTitle": "FileController \"before each\" hook in \"FileController\"",
+              "timedOut": false,
+              "duration": 0,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox = sinon.createSandbox();\nreq = {\n    file: {\n        originalname: 'test.pdf',\n        filename: '12345-test.pdf',\n        size: 1024,\n    },\n    body: {},\n    query: {},\n    params: {},\n    user: { id: 'user123' },\n};\nres = {\n    status: sandbox.stub().returnsThis(),\n    json: sandbox.stub(),\n};",
+              "err": {},
+              "uuid": "e52f9cfa-9863-4509-82ec-af81484a69f9",
+              "parentUUID": "3690b507-3563-4a17-81e1-32f19dccc500",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "afterHooks": [
+            {
+              "title": "\"after each\" hook in \"FileController\"",
+              "fullTitle": "FileController \"after each\" hook in \"FileController\"",
+              "timedOut": false,
+              "duration": 0,
+              "state": null,
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sandbox.restore();",
+              "err": {},
+              "uuid": "2dcd2e66-3793-4a12-ac07-660c13641391",
+              "parentUUID": "3690b507-3563-4a17-81e1-32f19dccc500",
+              "isHook": true,
+              "skipped": false
+            }
+          ],
+          "tests": [],
+          "suites": [
+            {
+              "uuid": "44e6697e-173e-4a03-ae9b-a385de1aa659",
+              "title": "uploadFile",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\fileController.test.js",
+              "file": "\\test\\fileController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should upload a file successfully and link it to a case",
+                  "fullTitle": "FileController uploadFile should upload a file successfully and link it to a case",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.body.caseId = 'case456';\nconst newFile = { _id: 'file789', ...req.file };\nconst mockCase = { _id: 'case456', evidence: [] };\nsandbox.stub(fileRepository, 'create').resolves(newFile);\nsandbox.stub(caseRepository, 'findById').resolves(mockCase);\nsandbox.stub(caseRepository, 'save').resolves();\nawait uploadFile(req, res);\nexpect(res.status).to.have.been.calledWith(201);\nexpect(res.json).to.have.been.calledWith({\n    message: 'File uploaded successfully',\n    file: newFile,\n});\nexpect(caseRepository.findById).to.have.been.calledWith('case456');\nexpect(mockCase.evidence).to.include('file789');\nexpect(caseRepository.save).to.have.been.calledWith(mockCase);",
+                  "err": {},
+                  "uuid": "f2dda25d-c340-4676-a892-12403c69f789",
+                  "parentUUID": "44e6697e-173e-4a03-ae9b-a385de1aa659",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 400 if no file is uploaded",
+                  "fullTitle": "FileController uploadFile should return 400 if no file is uploaded",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.file = undefined;\nawait uploadFile(req, res);\nexpect(res.status).to.have.been.calledWith(400);\nexpect(res.json).to.have.been.calledWith({ message: 'Please upload a file' });",
+                  "err": {},
+                  "uuid": "db22210d-dbfc-40d6-9fd7-260e4bfba669",
+                  "parentUUID": "44e6697e-173e-4a03-ae9b-a385de1aa659",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "f2dda25d-c340-4676-a892-12403c69f789",
+                "db22210d-dbfc-40d6-9fd7-260e4bfba669"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 1,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "1279ac5a-31f7-4c2b-9fd0-fd86947d5d3b",
+              "title": "getFiles",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\fileController.test.js",
+              "file": "\\test\\fileController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should get files for a given caseId",
+                  "fullTitle": "FileController getFiles should get files for a given caseId",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.query.caseId = 'case456';\nconst files = [{ originalName: 'file1.pdf' }, { originalName: 'file2.pdf' }];\nsandbox.stub(fileRepository, 'findByCaseId').resolves(files);\nawait getFiles(req, res);\nexpect(fileRepository.findByCaseId).to.have.been.calledWith('case456');\nexpect(res.json).to.have.been.calledWith(files);",
+                  "err": {},
+                  "uuid": "1f0bcedc-6c61-47b6-b2f8-22c6a3730224",
+                  "parentUUID": "1279ac5a-31f7-4c2b-9fd0-fd86947d5d3b",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 400 if caseId is not provided",
+                  "fullTitle": "FileController getFiles should return 400 if caseId is not provided",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "await getFiles(req, res);\nexpect(res.status).to.have.been.calledWith(400);\nexpect(res.json).to.have.been.calledWith({ message: 'caseId is required' });",
+                  "err": {},
+                  "uuid": "fa3096f0-1d31-4976-ae87-e3c6806d31d5",
+                  "parentUUID": "1279ac5a-31f7-4c2b-9fd0-fd86947d5d3b",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "1f0bcedc-6c61-47b6-b2f8-22c6a3730224",
+                "fa3096f0-1d31-4976-ae87-e3c6806d31d5"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 0,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "45b2ba6c-ab65-4d57-bc59-c02f8d2bab1a",
+              "title": "renameFile",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\fileController.test.js",
+              "file": "\\test\\fileController.test.js",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should rename a file successfully",
+                  "fullTitle": "FileController renameFile should rename a file successfully",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = 'file789';\nreq.body.newName = 'new-file-name';\nconst mockFile = {\n    userId: 'user123',\n    originalName: 'old-name.pdf',\n};\nsandbox.stub(fileRepository, 'findById').resolves(mockFile);\nsandbox.stub(fileRepository, 'save').resolves(mockFile);\nawait renameFile(req, res);\nexpect(fileRepository.findById).to.have.been.calledWith('file789');\nexpect(mockFile.originalName).to.equal('new-file-name.pdf');\nexpect(fileRepository.save).to.have.been.calledWith(mockFile);\nexpect(res.json).to.have.been.calledWith({ message: 'File renamed', file: mockFile });",
+                  "err": {},
+                  "uuid": "c4c63cf7-9f6c-4253-8f1d-25940b79e3ab",
+                  "parentUUID": "45b2ba6c-ab65-4d57-bc59-c02f8d2bab1a",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 403 if user is unauthorized",
+                  "fullTitle": "FileController renameFile should return 403 if user is unauthorized",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = 'file789';\nconst mockFile = { userId: 'anotherUser' }; // Different user\nsandbox.stub(fileRepository, 'findById').resolves(mockFile);\nawait renameFile(req, res);\nexpect(res.status).to.have.been.calledWith(403);\nexpect(res.json).to.have.been.calledWith({ message: 'Unauthorized' });",
+                  "err": {},
+                  "uuid": "45904efc-37c0-45bc-b301-082525d07902",
+                  "parentUUID": "45b2ba6c-ab65-4d57-bc59-c02f8d2bab1a",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "c4c63cf7-9f6c-4253-8f1d-25940b79e3ab",
+                "45904efc-37c0-45bc-b301-082525d07902"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 1,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "39a32797-7442-44de-8196-5adefcb49b1e",
+              "title": "deleteFile",
+              "fullFile": "C:\\Users\\hari\\Legal Case Manager\\Legal-Case-Manager\\backend\\test\\fileController.test.js",
+              "file": "\\test\\fileController.test.js",
+              "beforeHooks": [
+                {
+                  "title": "\"before each\" hook in \"deleteFile\"",
+                  "fullTitle": "FileController deleteFile \"before each\" hook in \"deleteFile\"",
+                  "timedOut": false,
+                  "duration": 0,
+                  "state": null,
+                  "speed": null,
+                  "pass": false,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "// Stub the file system unlink method to prevent actual file deletion\nunlinkSyncStub = sandbox.stub(fs, 'unlinkSync');",
+                  "err": {},
+                  "uuid": "b324fc32-de6c-4a25-9f64-96d8733f1052",
+                  "parentUUID": "39a32797-7442-44de-8196-5adefcb49b1e",
+                  "isHook": true,
+                  "skipped": false
+                }
+              ],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should delete a file record and the physical file",
+                  "fullTitle": "FileController deleteFile should delete a file record and the physical file",
+                  "timedOut": false,
+                  "duration": 1,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "req.params.id = 'file789';\nconst mockFile = { _id: 'file789', userId: 'user123', path: '12345-test.pdf' };\nsandbox.stub(fileRepository, 'findById').resolves(mockFile);\nsandbox.stub(fileRepository, 'deleteById').resolves();\nawait deleteFile(req, res);\n// Construct the expected path to check if unlinkSync was called correctly\nconst expectedPath = path.join(__dirname, '..', 'uploads', mockFile.path);\n\nexpect(fileRepository.findById).to.have.been.calledWith('file789');\nexpect(unlinkSyncStub).to.have.been.calledWith(expectedPath);\nexpect(fileRepository.deleteById).to.have.been.calledWith('file789');\nexpect(res.json).to.have.been.calledWith({ message: 'File deleted successfully' });",
+                  "err": {},
+                  "uuid": "b2b5f75f-d341-4222-9b16-a1de2151dda7",
+                  "parentUUID": "39a32797-7442-44de-8196-5adefcb49b1e",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "b2b5f75f-d341-4222-9b16-a1de2151dda7"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 1,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            }
+          ],
+          "passes": [],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 0,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "11.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": null,
+      "version": "6.3.0"
+    }
+  }
+}
