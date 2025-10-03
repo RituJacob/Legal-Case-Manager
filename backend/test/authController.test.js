@@ -26,7 +26,7 @@ describe('AuthController', () => {
             json: sandbox.stub(),
         };
 
-        // --- Mock Dependencies ---
+        //  Mock Dependencies ---
         userModelMock = {
             findOne: sandbox.stub(),
             create: sandbox.stub(),
@@ -39,14 +39,14 @@ describe('AuthController', () => {
             sign: sandbox.stub().returns('mock.jwt.token'),
         };
 
-        // Use proxyquire to load the controller with our mocks
+        // Use proxyquire to load the controller with mocks
         const authController = proxyquire('../controllers/authController', {
             '../models/User': userModelMock,
             'bcrypt': bcryptMock,
             'jsonwebtoken': jwtMock
         });
 
-        // Destructure the controller functions for use in tests
+        
         registerUser = authController.registerUser;
         loginUser = authController.loginUser;
         getProfile = authController.getProfile;
@@ -68,7 +68,7 @@ describe('AuthController', () => {
 
             expect(userModelMock.findOne).to.have.been.calledWith({ email: 'test@example.com' });
             
-            // --- THIS IS THE FIXED LINE ---
+            
             expect(userModelMock.create).to.have.been.calledWith({
                 ...req.body,
                 role: 'Client'
