@@ -12,7 +12,7 @@ const VALID_USER_ID = '60d5ecf3e5b3f1a2b4d9c7e8';
 describe('AuthController', () => {
     let req, res, sandbox;
     let registerUser, loginUser, getProfile, updateUserProfile;
-    let userModelMock, bcryptMock, jwtMock;
+    let userRepositoryMock, bcryptMock, jwtMock;
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
@@ -27,10 +27,11 @@ describe('AuthController', () => {
         };
 
         //  Mock Dependencies
-        userModelMock = {
-            findOne: sandbox.stub(),
+        userRepositoryMock = {
+            findByEmail: sandbox.stub(),
             create: sandbox.stub(),
             findById: sandbox.stub(),
+            save: sandbox.stub(),
         };
         bcryptMock = {
             compare: sandbox.stub(),
@@ -41,7 +42,7 @@ describe('AuthController', () => {
 
         
         const authController = proxyquire('../controllers/authController', {
-            '../models/User': userModelMock,
+            '../repositories/userRepository': userRepositoryMock,
             'bcrypt': bcryptMock,
             'jsonwebtoken': jwtMock
         });
@@ -60,16 +61,16 @@ describe('AuthController', () => {
     describe('registerUser', () => {
         it('should register a new user successfully', async () => {
             req.body = { name: 'Test User', email: 'test@example.com', password: 'password123' };
-            userModelMock.findOne.resolves(null); // No user exists
+            userRepositoryMock.findByEmail.resolves(null); // No user exists
             const newUser = { id: VALID_USER_ID, ...req.body, role: 'Client' };
-            userModelMock.create.resolves(newUser);
+            userRepositoryMock.create.resolves(newUser);
 
             await registerUser(req, res);
 
-            expect(userModelMock.findOne).to.have.been.calledWith({ email: 'test@example.com' });
+            expect(userRepositoryMock.findByEmail).to.have.been.calledWith('test@example.com');
             
             
-            expect(userModelMock.create).to.have.been.calledWith({
+            expect(userRepositoryMock.create).to.have.been.calledWith({
                 ...req.body,
                 role: 'Client'
             });
@@ -84,7 +85,7 @@ describe('AuthController', () => {
 
         it('should return 400 if user already exists', async () => {
             req.body = { name: 'Test User', email: 'test@example.com', password: 'password123' };
-            userModelMock.findOne.resolves({ id: 'someId' }); // User exists
+            userRepositoryMock.findByEmail.resolves({ id: 'someId' }); // User exists
 
             await registerUser(req, res);
 
@@ -112,12 +113,12 @@ describe('AuthController', () => {
                 password: 'hashedPassword',
                 role: 'Client'
             };
-            userModelMock.findOne.resolves(existingUser);
+            userRepositoryMock.findByEmail.resolves(existingUser);
             bcryptMock.compare.resolves(true); // Passwords match
 
             await loginUser(req, res);
 
-            expect(userModelMock.findOne).to.have.been.calledWith({ email: 'test@example.com' });
+            expect(userRepositoryMock.findByEmail).to.have.been.calledWith('test@example.com');
             expect(bcryptMock.compare).to.have.been.calledWith('password123', 'hashedPassword');
             expect(res.json).to.have.been.calledWithMatch({
                 id: VALID_USER_ID,
@@ -127,7 +128,7 @@ describe('AuthController', () => {
 
         it('should return 401 for a non-existent user', async () => {
             req.body = { email: 'nouser@example.com', password: 'password123' };
-            userModelMock.findOne.resolves(null); // User does not exist
+            userRepositoryMock.findByEmail.resolves(null); // User does not exist
 
             await loginUser(req, res);
 
@@ -138,7 +139,7 @@ describe('AuthController', () => {
         it('should return 401 for an incorrect password', async () => {
             req.body = { email: 'test@example.com', password: 'wrongpassword' };
             const existingUser = { password: 'hashedPassword' };
-            userModelMock.findOne.resolves(existingUser);
+            userRepositoryMock.findByEmail.resolves(existingUser);
             bcryptMock.compare.resolves(false); // Passwords do not match
 
             await loginUser(req, res);
@@ -158,17 +159,17 @@ describe('AuthController', () => {
                 contactNumber: '123-456-7890',
                 address: '123 Main St'
             };
-            userModelMock.findById.resolves(userProfile);
+            userRepositoryMock.findById.resolves(userProfile);
 
             await getProfile(req, res);
 
-            expect(userModelMock.findById).to.have.been.calledWith(VALID_USER_ID);
+            expect(userRepositoryMock.findById).to.have.been.calledWith(VALID_USER_ID);
             expect(res.status).to.have.been.calledWith(200);
             expect(res.json).to.have.been.calledWith(userProfile);
         });
 
         it('should return 404 if user not found', async () => {
-            userModelMock.findById.resolves(null);
+            userRepositoryMock.findById.resolves(null);
 
             await getProfile(req, res);
 
@@ -179,21 +180,20 @@ describe('AuthController', () => {
 
     describe('updateUserProfile', () => {
         it('should update the user profile successfully', async () => {
-            const mockUser = {
+            const mockUserInstance = {
                 id: VALID_USER_ID,
                 name: 'Old Name',
                 email: 'old@example.com',
-                save: sandbox.stub().resolvesThis()
+                
             };
-            userModelMock.findById.resolves(mockUser);
+            userRepositoryMock.findById.resolves(mockUserInstance);
+            userRepositoryMock.save.resolves({ ...mockUserInstance, name: 'New Name' });
             req.body = { name: 'New Name', email: 'new@example.com' };
 
             await updateUserProfile(req, res);
 
-            expect(userModelMock.findById).to.have.been.calledWith(VALID_USER_ID);
-            expect(mockUser.name).to.equal('New Name');
-            expect(mockUser.email).to.equal('new@example.com');
-            expect(mockUser.save).to.have.been.called;
+            expect(userRepositoryMock.findById).to.have.been.calledWith(VALID_USER_ID);
+            expect(userRepositoryMock.save).to.have.been.called;
             expect(res.json).to.have.been.calledWithMatch({
                 name: 'New Name',
                 token: 'mock.jwt.token'
@@ -201,7 +201,7 @@ describe('AuthController', () => {
         });
 
         it('should return 404 if user to update is not found', async () => {
-            userModelMock.findById.resolves(null);
+            userRepositoryMock.findById.resolves(null);
 
             await updateUserProfile(req, res);
 

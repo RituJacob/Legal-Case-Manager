@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const userRepository = require('../repositories/userRepository');
 
 const protect = async (req, res, next) => {
   const auth = req.headers.authorization;
@@ -8,7 +8,7 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
+    req.user = await userRepository.findByIdWithoutPassword(decoded.id);
     if (!req.user) return res.status(401).json({ message: 'Not authorized' });
     next();
   } catch (err) {
