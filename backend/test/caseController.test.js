@@ -124,7 +124,7 @@ describe('CaseController', () => {
 
         it('should fail if a client tries to make an unauthorized status change', async () => {
             req.params.id = VALID_CASE_ID;
-            req.body.status = 'Closed'; // A client cannot do this
+            req.body.status = 'Closed'; //  client cannot do this
             const authError = new Error('Not authorized to update case status');
             mockCaseRepository.updateCaseStatus.rejects(authError);
 
