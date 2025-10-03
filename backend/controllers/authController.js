@@ -8,11 +8,15 @@ const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// Register User (with role support)
+
 const registerUser = async (req, res) => {
     const { name, email, password, role, specialization, contactNumber, address } = req.body;
 
     try {
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Please provide name, email, and password' });
+        }
+
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: 'User already exists' });
 
@@ -26,15 +30,24 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Specialization is required for lawyers' });
         }
 
-        const user = await User.create({
+        const userData = {
             name,
             email,
             password,
-            role: role || 'Client', // Default role is Client
-            specialization: role === 'Lawyer' ? specialization : undefined,
-            contactNumber,
-            address
-        });
+            role: role || 'Client',
+        };
+
+        if (role === 'Lawyer') {
+            userData.specialization = specialization;
+        }
+        if (contactNumber) {
+            userData.contactNumber = contactNumber;
+        }
+        if (address) {
+            userData.address = address;
+        }
+
+        const user = await User.create(userData);
 
         res.status(201).json({
             id: user.id,
