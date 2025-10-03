@@ -1,6 +1,6 @@
 //authentication controls 
 
-const User = require('../models/User');
+const userRepository = require('../repositories/userRepository');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Please provide name, email, and password' });
         }
 
-        const userExists = await User.findOne({ email });
+        const userExists = await userRepository.findByEmail(email);
         if (userExists) return res.status(400).json({ message: 'User already exists' });
 
         // Role validation
@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
             userData.address = address;
         }
 
-        const user = await User.create(userData);
+        const user = await userRepository.create(userData);
 
         res.status(201).json({
             id: user.id,
@@ -66,7 +66,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await userRepository.findByEmail(email);
         if (user && (await bcrypt.compare(password, user.password))) {
             res.json({
                 id: user.id,
@@ -87,7 +87,7 @@ const loginUser = async (req, res) => {
 // Get Profile
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await userRepository.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -108,7 +108,7 @@ const getProfile = async (req, res) => {
 // Update Profile
 const updateUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await userRepository.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         const { name, email, specialization, contactNumber, address } = req.body;
@@ -124,7 +124,7 @@ const updateUserProfile = async (req, res) => {
         user.contactNumber = contactNumber || user.contactNumber;
         user.address = address || user.address;
 
-        const updatedUser = await user.save();
+        const updatedUser = await userRepository.save(user);
         res.json({
             id: updatedUser.id,
             name: updatedUser.name,
