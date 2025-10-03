@@ -60,36 +60,40 @@ const updateCaseStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const caseId = req.params.id;
- const user = req.user; // The lawyer performing the action
+    const user = req.user; // The lawyer or client performing the action
 
-    // We only handle the "accept" action here for now
+    const caseToUpdate = await Case.findById(caseId);
+    if (!caseToUpdate) {
+      return res.status(404).json({ message: 'Case not found' });
+    }
+
     if (status === 'In Progress') {
-      const caseToUpdate = await Case.findById(caseId);
-      if (!caseToUpdate) {
-        return res.status(404).json({ message: 'Case not found' });
+      if (caseToUpdate.status === 'Open') {
+        // First time accepting → use OOP method
+        const updatedCase = await caseToUpdate.acceptCase(user);
+        return res.json(updatedCase);
+      } else {
+        // Already accepted → just use repository update
+        const caseRepository = caseRepositoryProxyFactory(req.user);
+        const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
+        return res.json(updatedCase);
       }
-
-      // --- CALL THE OOP METHOD ---
-      // All the complex logic is now hidden inside the acceptCase method.
-      const updatedCase = await caseToUpdate.acceptCase(user);
-
-      res.json(updatedCase);
-    } else if (status === 'Closed') {
-      const caseToClose = await Case.findById(caseId);
-      if (!caseToClose) {
-        return res.status(404).json({ message: 'Case not found' });
+    } 
+    else if (status === 'Closed') {
+      if (caseToUpdate.status === 'In Progress') {
+        const updatedClosedCase = await caseToUpdate.closeCase(user);
+        return res.json(updatedClosedCase);
+      } else {
+        return res.status(400).json({ message: 'Case cannot be closed from current status' });
       }
-
-      // OOP for notifying closed case
-      const updatedClosedCase = await caseToClose.closeCase(user);
-
-      res.json(updatedClosedCase);
-    } else {
-      // Handle other status updates if necessary, perhaps with the repository
+    } 
+    else {
+      // Fallback for any other statuses
       const caseRepository = caseRepositoryProxyFactory(req.user);
       const updatedCase = await caseRepository.updateCaseStatus(caseId, status);
-      res.json(updatedCase);
-    } 
+      return res.json(updatedCase);
+    }
+
   } catch (err) {
     console.error('Error updating case status:', err);
     res.status(500).json({ message: err.message || 'Failed to update case status' });
