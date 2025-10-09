@@ -2,32 +2,31 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const Database = require('./config/db');
 
 dotenv.config();
 
-require('./config/db');
-
-
 const app = express();
-const caseRoutes = require('./routes/caseRoutes');
-const fileRoutes = require('./routes/fileRoutes')
 
-
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/cases', caseRoutes);
-app.use('/api/files', fileRoutes)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/cases', require('./routes/caseRoutes'));
+app.use('/api/files', require('./routes/fileRoutes'));
 app.use('/api/notifications', require('./routes/notifications'));
 
-
-// Export the app object for testing
+// Start server only after DB connects
 if (require.main === module) {
-    
-    const PORT = process.env.PORT || 5001;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  }
+    (async () => {
+        await Database.connect(); // Wait until MongoDB is connected
 
+        const PORT = process.env.PORT || 5001;
+        app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    })();
+}
 
-module.exports = app
+module.exports = app;
